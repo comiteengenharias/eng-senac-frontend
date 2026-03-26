@@ -1,0 +1,25 @@
+.input-custom {
+    border: 1px solid var(--blue);
+    padding: 0.75rem 1rem;
+    background-color: var(--white);
+    color: var(--black);
+    border-radius: 3px;
+    font-size: 14px;
+    outline: none;
+    margin-top: 5px;
+}
+
+.input-custom::placeholder {
+    opacity: 1;
+}
+
+.input-custom:focus {
+    box-shadow: 0 0 0 1px #003;
+    /* sombra leve ao focar */
+}
+
+.label-custom {
+    font-size: 14px;
+    opacity: .8;
+    font-weight: 400;
+}

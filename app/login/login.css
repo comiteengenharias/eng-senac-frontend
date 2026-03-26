@@ -1,0 +1,25 @@
+.input-custom-login {
+    border: none;
+    border-bottom: 3px solid var(--blue);
+    padding: 0.75rem 1rem;
+    background-color: rgb(245, 245, 245);
+    color: var(--black);
+    font-size: 14px;
+    outline: none;
+    margin-top: 15px;
+}
+
+.input-custom-login-professor {
+    border: none;
+    border-bottom: 3px solid var(--orange);
+    padding: 0.75rem 1rem;
+    background-color: rgb(245, 245, 245);
+    color: var(--black);
+    font-size: 14px;
+    outline: none;
+    margin-top: 15px;
+}
+
+.input-custom-login::placeholder {
+    opacity: 1;
+}
