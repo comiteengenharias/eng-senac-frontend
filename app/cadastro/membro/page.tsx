@@ -289,7 +289,8 @@ export default function AreaRestrita() {
     try {
       const response = await postMemberRegistration(data);
       setLoading(false)
-      Swal.fire({
+      
+      await Swal.fire({
         title: 'Cadastro realizado com sucesso',
         text: 'Mais informações foram enviadas para o seu e-mail',
         icon: 'success',
@@ -302,29 +303,19 @@ export default function AreaRestrita() {
         password: formDataObj.password
       }
 
+      setLoading(true);
       await loginStudent(dataLogin);
       router.push('/area-restrita/aluno');
 
     } catch (error: any) {
       setLoading(false)
-      if (error.response?.data) {
-        Swal.fire({
-          title: 'Oops!',
-          text: error.response.data,
-          icon: 'warning',
-          confirmButtonText: 'Ok',
-          confirmButtonColor: '#003'
-        });
-      } else {
-        Swal.fire({
-          title: 'Oops!',
-          text: "Erro inesperado ao se conectar com o servidor",
-          icon: 'error',
-          confirmButtonText: 'Ok',
-          confirmButtonColor: '#003'
-        });
-        throw new Error("Erro inesperado ao se conectar com o servidor.");
-      }
+      Swal.fire({
+        title: 'Oops!',
+        text: "Erro ao se conectar com o servidor. Por favor, tente novamente mais tarde.",
+        icon: 'error',
+        confirmButtonText: 'Ok',
+        confirmButtonColor: '#003'
+      });
     }
   };
 
