@@ -248,7 +248,7 @@ export default function AreaRestrita_Aluno() {
                 <div className="flex flex-col items-center gap-4 flex-1">
                   <Avatar className="w-32 h-32 rounded-full overflow-hidden flex-shrink-0">
                     <AvatarImage
-                      src={process.env.NEXT_PUBLIC_API_URL + "/" + business.company.picture}
+                      src={business.company.picture}
                       className="rounded-full object-cover w-full h-full"
                     />
                     <AvatarFallback className="w-full h-full bg-gray-200 border-4 border-gray-300 flex items-center justify-center">

@@ -47,7 +47,7 @@ function getCourseStyles(curso: string): { bg: string; text: string } {
 }
 
 const CURSOS = ["BEC", "BEP"];
-const SEMESTRES = [2, 4, 6, 8, 10];
+const SEMESTRES = [1, 3, 5, 7, 9];
 
 // Mapeamento de cursos para exibição e envio à API
 const CURSO_MAPPING: Record<string, string> = {

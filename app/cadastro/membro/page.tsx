@@ -13,6 +13,42 @@ import LoadingOverlay from '@/components/system/loading-overlay';
 // Mapeamento de matérias por curso e semestre (sem disciplinas de "Projeto")
 const SUBJECTS_BY_COURSE: Record<string, Record<number, string[]>> = {
   comp: {
+    // Semestres ímpares
+    1: [
+      "Contabilidade de Custos e Sustentabilidade",
+      "Design de Software I",
+      "Design para Manufatura",
+      "Eletroeletrônica",
+    ],
+    3: [
+      "Cálculo Numérico Aplicado",
+      "Circuitos Digitais I",
+      "Física Aplicada - práticas de extensão",
+      "Logística e Gestão da Cadeia de Suprimentos",
+      "Tecnologia de Processos Industriais e de Serviços",
+    ],
+    5: [
+      "Banco de Dados",
+      "Estruturação de Dados",
+      "Fenômenos de Transporte",
+      "Oscilações e Ondas",
+    ],
+    7: [
+      "Design de Aplicativos",
+      "Eletrônica e Laboratório de Eletrônica",
+      "Engenharia de Software I",
+      "Ondas e Eletromagnetismo",
+      "Sistemas Operacionais",
+      "Sistemas, Sinais e Engenharia de Controle",
+    ],
+    9: [
+      "Energia",
+      "Inteligência Artificial e Aprendizado de Máquinas",
+      "Laboratório de Redes",
+      "Linguagens Formais e Compiladores",
+      "Programação Mobile Avançado",
+    ],
+    /* Semestres pares
     2: [
       "Administração e Economia",
       "Ciência dos Dados",
@@ -48,8 +84,46 @@ const SUBJECTS_BY_COURSE: Record<string, Record<number, string[]>> = {
       "Segurança Cibernética e Tecnologia Blockchain",
       "Telecomunicações Aplicadas a Software Defined Radio e Internet of Things",
     ],
+    */
   },
   prod: {
+    // Semestres ímpares
+    1: [
+      "Contabilidade de Custos e Sustentabilidade",
+      "Design de Software I",
+      "Design para Manufatura",
+      "Eletroeletrônica",
+    ],
+    3: [
+      "Cálculo Numérico Aplicado",
+      "Física Aplicada - práticas de extensão",
+      "Gerenciamento de Conflitos",
+      "Logística e Gestão da Cadeia de Suprimentos",
+      "Tecnologia de Processos Industriais e de Serviços",
+    ],
+    5: [
+      "Banco de Dados",
+      "Fenômenos de Transporte",
+      "Oscilações e Ondas",
+      "Pesquisa Operacional I: modelos determinísticos",
+    ],
+    7: [
+      "Engenharia Econômica",
+      "Gestão da Inovação",
+      "Gestão da Qualidade, Produtividade e Sustentabilidade",
+      "Gestão de Processos de Negócios",
+      "Gestão de Riscos",
+      "Projeto de Produtos e Serviços",
+      "Simulação de Sistemas de Produção",
+    ],
+    9: [
+      "Energia",
+      "Engenharia de Serviço Aplicado à Saúde",
+      "Inteligência Artificial e Aprendizado de Máquinas",
+      "Internet das Coisas em Serviços",
+      "Simulação de Robótica e Automação em Serviços",
+    ],
+    /* Semestres pares
     2: [
       "Administração e Economia",
       "Ciência dos Dados",
@@ -84,6 +158,7 @@ const SUBJECTS_BY_COURSE: Record<string, Record<number, string[]>> = {
       "Segurança Cibernética e Tecnologia Blockchain",
       "Simulação de Processos e Serviços",
     ],
+    */
   },
 };
 
@@ -479,7 +554,7 @@ export default function AreaRestrita() {
                 >
                   <option value="">Selecione seu semestre</option>
                   {Array.from({ length: 5 }, (_, i) => {
-                    const value = (i + 1) * 2
+                    const value = i * 2 + 1
                     return (
                       <option key={value} value={value}>
                         {`${value}º semestre`}

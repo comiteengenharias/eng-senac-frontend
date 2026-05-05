@@ -51,7 +51,7 @@ interface TeacherProjectData {
   project: Project;
 }
 
-const SEMESTRES = [2, 4, 6, 8, 10];
+const SEMESTRES = [1, 3, 5, 7, 9];
 
 export default function AreaRestrita_Professor() {
   const router = useRouter();
