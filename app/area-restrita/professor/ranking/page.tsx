@@ -14,7 +14,7 @@ interface RankingData {
     [semester: number]: RankingProject[];
 }
 
-const SEMESTERS = [2, 4, 6, 8, 10];
+const SEMESTERS = [1, 3, 5, 7, 9];
 
 export default function RankingPage() {
     const router = useRouter();

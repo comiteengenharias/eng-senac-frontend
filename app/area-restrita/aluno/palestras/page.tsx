@@ -150,7 +150,7 @@ export default function AreaRestrita_Aluno() {
                                 <div className="flex gap-6 items-center flex-col sm:flex-row">
                                     <Avatar className="w-40">
                                         <AvatarImage
-                                            src={process.env.NEXT_PUBLIC_API_URL + "/" + lecture.lecture.picture}
+                                            src={lecture.lecture.picture}
                                             className="rounded-full object-cover w-full border-4"
                                         />
                                         <AvatarFallback>{lecture.lectureSpeaker.fullname}</AvatarFallback>
