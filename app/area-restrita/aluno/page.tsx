@@ -63,12 +63,28 @@ export default function AreaRestrita_Aluno() {
 
   useEffect(() => {
     (async () => {
-      const data = await getSummaryInfo();
-      setSummaryInfo(data);
+      try {
+        const data = await getSummaryInfo();
+        if (!data || data?.message?.toLowerCase().includes('not found') || data?.message?.toLowerCase().includes('não encontrado')) {
+          logout();
+          router.push('/');
+          return;
+        }
+        setSummaryInfo(data);
 
-      const lectures = await getLecturesInfo();
-      setLecturesInfo(lectures);
-      setLoading(false)
+        const lectures = await getLecturesInfo();
+        setLecturesInfo(lectures);
+      } catch (error: any) {
+        const status = error?.response?.status;
+        const message: string = error?.response?.data?.message ?? '';
+        if (status === 404 || message.toLowerCase().includes('not found') || message.toLowerCase().includes('não encontrado')) {
+          logout();
+          router.push('/');
+          return;
+        }
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

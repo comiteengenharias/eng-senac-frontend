@@ -62,9 +62,14 @@ export default function AreaRestrita_Aluno() {
 
     useEffect(() => {
         (async () => {
-            const response = await getLecturesInfo();
-            setLecturesInfo(response);
-            setLoading(false)
+            try {
+                const response = await getLecturesInfo();
+                setLecturesInfo(response);
+            } catch (error) {
+                console.error('Erro ao carregar palestras:', error);
+            } finally {
+                setLoading(false);
+            }
         })();
     }, []);
 

@@ -59,10 +59,14 @@ export default function AreaRestrita_Aluno() {
 
   useEffect(() => {
     (async () => {
-      const response = await getBusinessInfo()
-      setbusinessInfo(response)
-      setLoading(false);
-
+      try {
+        const response = await getBusinessInfo();
+        setbusinessInfo(response);
+      } catch (error) {
+        console.error('Erro ao carregar empresas:', error);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

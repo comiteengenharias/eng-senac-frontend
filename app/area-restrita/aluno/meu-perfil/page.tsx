@@ -149,23 +149,28 @@ export default function AreaRestrita_Aluno() {
 
     useEffect(() => {
         (async () => {
-            const response = await getStudentInfo();
-            // A API retorna com a estrutura { student: {...}, extraNote, extraNoteReason }
-            const studentData = response.student ?? response;
-            const fullData = {
-                ...studentData,
-                extraNote: response.extraNote,
-                extraNoteReason: response.extraNoteReason
-            };
-            setGetInfo(fullData);
+            try {
+                const response = await getStudentInfo();
+                // A API retorna com a estrutura { student: {...}, extraNote, extraNoteReason }
+                const studentData = response.student ?? response;
+                const fullData = {
+                    ...studentData,
+                    extraNote: response.extraNote,
+                    extraNoteReason: response.extraNoteReason
+                };
+                setGetInfo(fullData);
 
-            const courseValue = studentData.Course ?? studentData.course;
-            const courseName =
-                courseValue === "comp"
-                    ? "Engenharia de Computação"
-                    : "Engenharia de Produção";
-            setCourse(courseName);
-            setLoading(false)
+                const courseValue = studentData.Course ?? studentData.course;
+                const courseName =
+                    courseValue === "comp"
+                        ? "Engenharia de Computação"
+                        : "Engenharia de Produção";
+                setCourse(courseName);
+            } catch (error) {
+                console.error('Erro ao carregar dados do aluno:', error);
+            } finally {
+                setLoading(false);
+            }
         })();
     }, []);
 
