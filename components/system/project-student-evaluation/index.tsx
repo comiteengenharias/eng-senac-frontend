@@ -125,13 +125,13 @@ export function ProjectStudentEvaluation({ semester, projects }: EvaluationPageP
         const mes = hoje.getMonth();
         const ano = hoje.getFullYear();
 
-        if (dia !== 7 || mes !== 5 || ano !== 2025) {
+        if (dia !== 13 || mes !== 5 || ano !== 2026) {
             closeVideoFromCamera();
             setDialogOpen(false);
             setLoading(false)
             Swal.fire({
                 title: 'Avaliação indisponível',
-                text: 'As avaliações só podem ser realizadas no dia 07/06/2025.',
+                text: 'As avaliações só podem ser realizadas no dia 13/06/2026.',
                 icon: 'info',
                 confirmButtonText: 'Ok',
                 confirmButtonColor: '#003'

@@ -73,22 +73,6 @@ export function ProjectTeacherEvaluation({ semester, projects }: EvaluationPageP
     const sendAssessment = async () => {
         setLoading(true)
         const hoje = new Date();
-        const dia = hoje.getDate();
-        const mes = hoje.getMonth();
-        const ano = hoje.getFullYear();
-
-        if (!(ano === 2025 && mes === 5 && (dia === 5 || dia === 6 || dia === 7))) {
-            setDialogOpen(false);
-            setLoading(false)
-            Swal.fire({
-                title: 'Avaliação indisponível',
-                text: 'As avaliações só podem ser realizadas nos dias 05, 06 e 07/06/2025.',
-                icon: 'info',
-                confirmButtonText: 'Ok',
-                confirmButtonColor: '#003'
-            });
-            return;
-        }
 
         if (!selectedProject) return;
 

@@ -34,14 +34,14 @@ export default function AreaRestrita_Aluno() {
 
     interface Interval {
         durationMinutes: number;
-        in: string;  // exemplo: "2025-06-14T19:10:00"
-        out: string; // exemplo: "2025-06-14T20:10:00"
+        in: string;
+        out: string;
     }
 
     interface Lecture {
         codeLecture: number;
-        datetimeEnd: string;    // exemplo: "2025-06-14T20:10:00"
-        datetimeStart: string;  // exemplo: "2025-06-14T19:10:00"
+        datetimeEnd: string;
+        datetimeStart: string;
         description: string;
         linkLive: string;
         room: string;
