@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { verifyLogin } from "@/services/api-login";
+import { logout, verifyLogin } from "@/services/api-login";
 import { getTeacherInfo, postChangePassword } from "@/services/api-teacher";
 import LoadingOverlay from "@/components/system/loading-overlay";
 
@@ -136,6 +136,12 @@ export default function AreaRestrita_Teacher() {
     (async () => {
       try {
         const response = await getTeacherInfo();
+        const message: string = response?.message ?? '';
+        if (!response || message.toLowerCase().includes('not found') || message.toLowerCase().includes('não encontrado')) {
+          logout();
+          router.push('/');
+          return;
+        }
         // Se a resposta vem com a estrutura { teacher, panels }
         if (response?.teacher) {
           setGetInfo({
@@ -147,7 +153,14 @@ export default function AreaRestrita_Teacher() {
           // Se a resposta já vem com os dados diretos
           setGetInfo(response);
         }
-      } catch (error) {
+      } catch (error: any) {
+        const status = error?.response?.status;
+        const message: string = error?.response?.data?.message ?? '';
+        if (status === 404 || message.toLowerCase().includes('not found') || message.toLowerCase().includes('não encontrado')) {
+          logout();
+          router.push('/');
+          return;
+        }
         console.error('Erro ao carregar dados do professor:', error);
       } finally {
         setLoading(false);

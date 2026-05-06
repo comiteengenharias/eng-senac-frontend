@@ -26,6 +26,7 @@ export default function AreaRestrita_Apoio() {
         (async () => {
             const data = await verifyLogin();
             if (!data || data == null || data.role !== 'Support') {
+                setLoading(false);
                 router.push('/area-restrita');
             } else {
                 setLoading(false);
