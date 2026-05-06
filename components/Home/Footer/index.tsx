@@ -97,7 +97,7 @@ export default function Depoiments() {
                             className="hover:opacity-80 transition-opacity duration-300"
                         />
                         <p className="text-gray-500 text-xs">
-                            © 2025 Engenharias Senac. Todos os direitos reservados.
+                            © 2026 Engenharias Senac. Todos os direitos reservados.
                         </p>
                     </div>
 

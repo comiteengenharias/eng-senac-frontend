@@ -157,12 +157,12 @@ export default function AreaRestrita_Aluno() {
     const mes = hoje.getMonth();
     const ano = hoje.getFullYear();
 
-    if (dia !== 6 || mes !== 11 || ano !== 2025) {
+    if (dia !== 13 || mes !== 5 || ano !== 2026) {
       closeVideoFromCamera();
       setDialogOpen(false);
       Swal.fire({
         title: 'Avaliação indisponível',
-        text: 'As avaliações só podem ser realizadas no dia 06/12/2025.',
+        text: 'As avaliações só podem ser realizadas no dia 13/06/2026.',
         icon: 'info',
         confirmButtonText: 'Ok',
         confirmButtonColor: '#003'

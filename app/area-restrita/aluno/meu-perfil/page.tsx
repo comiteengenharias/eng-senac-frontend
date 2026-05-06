@@ -214,7 +214,7 @@ export default function AreaRestrita_Aluno() {
                         }`}>
                           {(getInfo?.extraNote ?? 0) > 0 
                             ? `✓ Você está apto a receber ${getInfo?.extraNote} ponto extra em ${getInfo?.PointMaterial ?? getInfo?.pointMaterial}`
-                            : new Date() < new Date('2025-12-07') 
+                            : new Date() < new Date('2026-06-14') 
                               ? 'Você ainda não está apto a receber ponto extra'
                               : 'Você não está apto a receber ponto extra'
                           }
