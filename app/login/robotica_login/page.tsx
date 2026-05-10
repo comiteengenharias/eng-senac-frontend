@@ -131,22 +131,31 @@ export default function PortalRobotica() {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
 
+  // ========== HANDLER: LOGIN ==========
+  // Função chamada ao enviar o formulário de login
+  // Valida email e senha, simula requisição à API e exibe alerta de sucesso
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault(); // Previne recarga da página
+    setLoginError(''); // Limpa erros anteriores
+
+    // Valida se o email tem formato correto
     if (!validateEmail(loginEmail)) {
       setLoginError('E-mail inválido');
       return;
     }
+    
+    // Valida se a senha foi preenchida
     if (!loginPassword) {
       setLoginError('Senha obrigatória');
       return;
     }
 
+    // Simula envio de dados e aguarda resposta (1.5 segundos)
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      // Exibe alerta de sucesso com ícone verde
       Swal.fire({
         title: 'Acesso Liberado!',
         text: `Bem-vindo ao portal, ${selectedProfile}.`,
@@ -158,75 +167,115 @@ export default function PortalRobotica() {
     }, 1500);
   };
 
+  // ========== HANDLER: ENVIAR EMAIL DE RECUPERAÇÃO ==========
+  // Função para enviar instruções de redefinição de senha para o email
   const handleSendRecoveryEmail = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Valida se o email foi preenchido e tem formato correto
     if (!validateEmail(recoveryEmail)) {
       Swal.fire({ icon: 'error', title: 'Erro', text: 'Insira um e-mail válido.', confirmButtonColor: '#004B93' });
       return;
     }
+    
+    // Simula envio do email e avança para tela de código
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      setTimer(165);
-      setScreen('FORGOT_CODE');
+      setTimer(165); // Reseta o contador para 2 minutos e 45 segundos
+      setScreen('FORGOT_CODE'); // Muda para a tela de verificação do código
     }, 1000);
   };
 
+
+  // ========== HANDLER: MUDANÇA DE DÍGITO DO CÓDIGO ==========
+  // Controladores para o input dos 6 dígitos do código de verificação
+  // Quando digita um número, move o foco para o próximo campo automaticamente
   const handleCodeChange = (index: number, value: string) => {
+    // Garante que apenas 1 caractere seja digitado por campo
     if (value.length > 1) value = value.slice(-1);
+    
+    // Atualiza o array com o novo dígito
     const newCode = [...recoveryCode];
     newCode[index] = value;
     setRecoveryCode(newCode);
 
+    // Se digitou algo e não é o último campo, move para o próximo
     if (value && index < 5) {
       codeInputsRef.current[index + 1]?.focus();
     }
   };
 
+  // ========== HANDLER: TECLA PRESSIONADA NO CÓDIGO ==========
+  // Permite voltar ao campo anterior ao pressionar Backspace
   const handleCodeKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === 'Backspace' && !recoveryCode[index] && index > 0) {
       codeInputsRef.current[index - 1]?.focus();
     }
   };
 
+  // ========== HANDLER: VERIFICAR CÓDIGO ==========
+  // Valida se os 6 dígitos foram preenchidos e avança para redefinição de senha
   const handleVerifyCode = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Junta todos os 6 dígitos em uma string
     const fullCode = recoveryCode.join('');
+    
+    // Valida se todos os 6 dígitos foram preenchidos
     if (fullCode.length < 6) {
       Swal.fire({ icon: 'warning', title: 'Código Incompleto', text: 'Preencha os 6 dígitos.', confirmButtonColor: '#004B93' });
       return;
     }
+    
+    // Simula validação do código no servidor
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      setScreen('FORGOT_RESET');
+      setScreen('FORGOT_RESET'); // Avança para tela de nova senha
     }, 1000);
   };
 
+
+  // ========== VALIDAÇÕES DE SEGURANÇA DA SENHA ==========
+  // Verifica se a nova senha tem pelo menos 8 caracteres
   const isLengthOk = newPassword.length >= 8;
+  
+  // Verifica se a nova senha contém pelo menos 1 número
   const hasNumber = /\d/.test(newPassword);
+  
+  // Verifica se a nova senha contém pelo menos 1 caractere especial (!@#$%^&* etc)
   const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
 
+  // ========== HANDLER: REDEFINIR SENHA ==========
+  // Processa a redefinição de senha após verificação do código
   const handleResetPassword = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Valida se a senha atende aos requisitos de segurança
     if (!isLengthOk || !hasNumber || !hasSpecial) {
       Swal.fire({ icon: 'error', title: 'Senha fraca', text: 'Atenda a todos os requisitos de segurança.', confirmButtonColor: '#004B93' });
       return;
     }
+    
+    // Valida se as duas senhas digitadas são iguais
     if (newPassword !== confirmNewPassword) {
       Swal.fire({ icon: 'error', title: 'Senhas divergentes', text: 'A confirmação de senha não confere.', confirmButtonColor: '#004B93' });
       return;
     }
 
+    // Simula envio da nova senha para o servidor
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      // Exibe alerta de sucesso
       Swal.fire({
         title: 'Senha redefinida!',
         text: 'Sua senha foi alterada com sucesso.',
         icon: 'success',
         confirmButtonColor: '#004B93'
       }).then(() => {
+        // Após confirmar, volta para login e limpa os campos
         setScreen('LOGIN');
         setNewPassword('');
         setConfirmNewPassword('');
@@ -234,42 +283,63 @@ export default function PortalRobotica() {
     }, 1500);
   };
 
+
+  // ========== HANDLER: CADASTRO ==========
+  // Valida todos os campos do formulário de cadastro
+  // Os campos obrigatórios variam de acordo com o perfil selecionado
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     const errors: {[key: string]: string} = {};
 
+    // Valida se o nome foi preenchido
     if (!regFullName.trim()) errors.fullName = 'Campo obrigatório';
+    
+    // Valida se o CPF foi preenchido e tem no mínimo 11 dígitos
     if (!regCpf.trim() || regCpf.length < 11) errors.cpf = 'CPF inválido';
+    
+    // Valida se o email tem formato correto
     if (!validateEmail(regEmail)) errors.email = 'E-mail inválido';
     
+    // ADMIN e JUIZ precisam de código de autorização
     if ((selectedProfile === 'ADMIN' || selectedProfile === 'JUIZ') && !regAuthCode.trim()) {
       errors.authCode = 'Código de autorização obrigatório';
     }
+    
+    // TECNICO precisa informar a instituição
     if (selectedProfile === 'TECNICO' && !regInstitution.trim()) {
       errors.institution = 'Instituição obrigatória';
     }
     
+    // Valida se a senha tem no mínimo 8 caracteres
     if (regPassword.length < 8) errors.password = 'Mínimo de 8 caracteres';
+    
+    // Valida se as duas senhas são iguais
     if (regPassword !== regConfirmPassword) errors.confirmPassword = 'As senhas não coincidem';
 
+    // Armazena os erros encontrados
     setRegErrors(errors);
 
+    // Se houver erros, não prossegue com o cadastro
     if (Object.keys(errors).length > 0) return;
 
+    // Simula envio dos dados para o servidor
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      // Exibe alerta de sucesso com o perfil criado
       Swal.fire({
         title: 'Cadastro Realizado!',
         text: `Perfil de ${selectedProfile} criado com sucesso.`,
         icon: 'success',
         confirmButtonColor: '#004B93'
       }).then(() => {
-        setScreen('LOGIN');
+        setScreen('LOGIN'); // Volta para tela de login
       });
     }, 1500);
   };
 
+  // ========== FUNÇÃO AUXILIAR: LIMPAR FORMULÁRIOS ==========
+  // Reseta mensagens de erro e estados de visibilidade de senha
   const resetForms = () => {
     setLoginError('');
     setRegErrors({});
@@ -277,21 +347,34 @@ export default function PortalRobotica() {
     setShowConfirmPassword(false);
   };
 
+
+  // ========== RENDERIZAÇÃO (JSX) ==========
   return (
+    // Container principal: flex com 2 colunas (sidebar esquerda + conteúdo direita)
     <div className="flex min-h-screen bg-white text-[#34495E] font-sans antialiased">
+      
+      {/* Importa fonts customizadas do Google Fonts (Space Grotesk e Inter) */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;600;700;700&display=swap');
         .font-headline { font-family: 'Space Grotesk', sans-serif; }
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
 
-      {/* BARRA LATERAL ESQUERDA */}
+      {/* ========== SIDEBAR ESQUERDA (OCULTA EM MOBILE) ========== */}
+      {/* Exibe apenas em telas grandes (lg). Tem background azul escuro com gradient */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#004B93] relative overflow-hidden flex-col justify-between p-12">
+        
+        {/* Imagem de background com overlay */}
         <div className="absolute inset-0 z-0 bg-cover bg-center mix-blend-overlay opacity-30"
              style={{ backgroundImage: 'url(/img/pictures/projects/robot.png)' }} />
+        
+        {/* Gradiente overlay sobre a imagem para melhorar legibilidade */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#004B93]/90 via-[#004B93]/95 to-[#001f3f]/95 z-10" />
 
+        {/* Conteúdo textual da sidebar (em cima dos overlays) */}
         <div className="relative z-20 max-w-lg">
+          
+          {/* Badge "ROBOTIC_SYNC" com ponto animado */}
           <div className="mb-8">
             <span className="inline-flex items-center gap-2 bg-[#F7941D] text-white px-3 py-1.5 rounded font-headline font-bold text-xs tracking-widest uppercase shadow-sm">
               <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
@@ -299,36 +382,46 @@ export default function PortalRobotica() {
             </span>
           </div>
 
+          {/* Título principal "Torneio de Robótica" */}
           <h1 className="text-5xl lg:text-6xl font-headline font-bold text-white mb-4 leading-tight tracking-tight">
             Torneio de<br />Robótica
           </h1>
 
+          {/* Subtítulo "Portal de Acesso" */}
           <h2 className="text-2xl lg:text-3xl font-body font-light text-white/90 mb-6">
             Portal de Acesso
           </h2>
 
+          {/* Descrição do portal */}
           <p className="text-blue-100/80 font-body text-base leading-relaxed pr-6">
             Onde a precisão da engenharia encontra a inovação sustentável. Acesse o portal oficial para gerenciar equipes, matches e avaliações técnicas.
           </p>
         </div>
 
+        {/* Logo do Senac no rodapé da sidebar */}
         <div className="relative z-20">
           <Image src="/img/branding/logo-white.png" alt="Logo Senac" width={140} height={45} className="object-contain" priority />
         </div>
       </div>
 
-      {/* ÁREA DINÂMICA DIREITA */}
+      {/* ========== ÁREA DINÂMICA DIREITA ========== */}
+      {/* Ocupa 100% em mobile e 50% em telas grandes */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 overflow-y-auto">
         <div className="w-full max-w-md font-body">
 
-          {/* TELA 1: LOGIN */}
+
+          {/* ========== TELA 1: LOGIN ========== */}
           {screen === 'LOGIN' && (
             <div className="animate-fadeIn transition-all duration-300">
+              
+              {/* Títulos e descrição */}
               <div className="mb-6">
                 <h3 className="text-3xl font-headline font-bold text-[#34495E] mb-1">Bem-vindo ao Portal</h3>
                 <p className="text-sm text-[#34495E]/70 font-body">Selecione seu perfil para continuar a jornada técnica.</p>
               </div>
 
+              {/* Seletores de Perfil (ADMIN, JUIZ, TECNICO) */}
+              {/* Grid com 3 colunas. Muda estilo do botão conforme selecionado */}
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {(['ADMIN', 'JUIZ', 'TECNICO'] as UserProfile[]).map((prof) => (
                   <button
@@ -341,11 +434,13 @@ export default function PortalRobotica() {
                         : 'bg-[#F8FAFC] border-gray-200 hover:border-gray-300 opacity-70'
                     }`}
                   >
+                    {/* Emoji representativo de cada perfil */}
                     <span className="text-xl mb-1">
                       {prof === 'ADMIN' && '👤'}
                       {prof === 'JUIZ' && '⚖️'}
                       {prof === 'TECNICO' && '🔧'}
                     </span>
+                    {/* Rótulo do perfil */}
                     <span className={`text-xs font-headline font-bold tracking-tight ${selectedProfile === prof ? 'text-[#004B93]' : 'text-[#34495E]'}`}>
                       {prof === 'TECNICO' ? 'TÉCNICO' : prof}
                     </span>
@@ -353,10 +448,14 @@ export default function PortalRobotica() {
                 ))}
               </div>
 
+              {/* Formulário de Login */}
               <form onSubmit={handleLogin} className="space-y-4">
+                
+                {/* Campo de E-mail */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1.5">E-mail Institucional</label>
                   <div className="relative">
+                    {/* Ícone de email */}
                     <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400" />
                     <input
                       type="email"
@@ -367,14 +466,18 @@ export default function PortalRobotica() {
                         loginError ? 'border-red-500 focus:ring-red-200 bg-red-50/30' : 'border-transparent focus:border-[#004B93] focus:ring-[#004B93]/10'
                       }`}
                     />
+                    {/* Ícone de erro se houver */}
                     {loginError && <AlertCircle className="absolute right-3 top-3.5 w-5 h-5 text-red-500 animate-bounce" />}
                   </div>
+                  {/* Mensagem de erro */}
                   {loginError && <p className="text-xs text-red-500 font-medium mt-1">• {loginError}</p>}
                 </div>
 
+                {/* Campo de Senha */}
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
                     <label className="text-xs font-bold uppercase tracking-wider text-[#34495E]">Senha</label>
+                    {/* Link para esqueceu a senha */}
                     <button 
                       type="button" 
                       onClick={() => { setScreen('FORGOT_EMAIL'); resetForms(); }}
@@ -392,6 +495,7 @@ export default function PortalRobotica() {
                       placeholder="••••••••••••"
                       className="w-full pl-10 pr-10 py-3 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none focus:border-[#004B93] focus:ring-2 focus:ring-[#004B93]/10 transition-all"
                     />
+                    {/* Botão para mostrar/ocultar senha */}
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
@@ -402,6 +506,7 @@ export default function PortalRobotica() {
                   </div>
                 </div>
 
+                {/* Checkbox "Manter sessão ativa" */}
                 <div className="flex items-center pt-1">
                   <input
                     type="checkbox"
@@ -415,12 +520,14 @@ export default function PortalRobotica() {
                   </label>
                 </div>
 
+                {/* Botão de Submit */}
                 <button
                   type="submit"
                   disabled={loading}
                   className="w-full mt-4 bg-[#004B93] hover:bg-[#003970] text-white font-headline font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg disabled:opacity-70 active:scale-[0.99]"
                 >
                   {loading ? (
+                    // Spinner de carregamento
                     <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
@@ -431,7 +538,7 @@ export default function PortalRobotica() {
                 </button>
               </form>
 
-              {/* Divisor Condicional */}
+              {/* Divisor "Ou cadastre-se" */}
               <div className="relative my-8">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
                 <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold text-gray-400">
@@ -441,7 +548,7 @@ export default function PortalRobotica() {
                 </div>
               </div>
 
-              {/* Ação para Cadastro Condicional */}
+              {/* Botão para ir para cadastro */}
               <button
                 type="button"
                 onClick={() => { setScreen('REGISTER'); resetForms(); }}
@@ -451,6 +558,7 @@ export default function PortalRobotica() {
                 <PlusCircle className="w-4 h-4 text-[#F7941D]" />
               </button>
 
+              {/* Rodapé com link para regras */}
               <p className="text-center text-xs text-[#34495E]/60 mt-4">
                 Primeira vez no torneio?{' '}
                 <a href="#regras" className="text-[#F7941D] font-bold hover:underline">Veja as regras de participação.</a>
@@ -458,9 +566,12 @@ export default function PortalRobotica() {
             </div>
           )}
 
-          {/* TELA 2: RECUPERAÇÃO - E-MAIL */}
+
+          {/* ========== TELA 2: RECUPERAÇÃO - ETAPA 1 (E-MAIL) ========== */}
           {screen === 'FORGOT_EMAIL' && (
             <div className="animate-fadeIn transition-all duration-300">
+              
+              {/* Botão de voltar */}
               <button 
                 onClick={() => setScreen('LOGIN')} 
                 className="flex items-center gap-1 text-xs font-bold text-[#004B93] hover:underline mb-6"
@@ -468,11 +579,13 @@ export default function PortalRobotica() {
                 <ArrowLeft className="w-3.5 h-3.5" /> Voltar para o Login
               </button>
 
+              {/* Títulos */}
               <h3 className="text-3xl font-headline font-bold text-[#34495E] mb-2">Recuperar Senha</h3>
               <p className="text-sm text-[#34495E]/70 font-body mb-6 leading-relaxed">
                 Insira seu e-mail cadastrado para receber as instruções de redefinição.
               </p>
 
+              {/* Formulário */}
               <form onSubmit={handleSendRecoveryEmail} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1.5">E-mail</label>
@@ -489,6 +602,7 @@ export default function PortalRobotica() {
                   </div>
                 </div>
 
+                {/* Botão de envio */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -500,9 +614,12 @@ export default function PortalRobotica() {
             </div>
           )}
 
-          {/* TELA 3: RECUPERAÇÃO - CÓDIGO */}
+
+          {/* ========== TELA 3: RECUPERAÇÃO - ETAPA 2 (CÓDIGO) ========== */}
           {screen === 'FORGOT_CODE' && (
             <div className="animate-fadeIn transition-all duration-300">
+              
+              {/* Botão de voltar */}
               <button 
                 onClick={() => setScreen('FORGOT_EMAIL')} 
                 className="flex items-center gap-1 text-xs font-bold text-[#004B93] hover:underline mb-6"
@@ -510,12 +627,17 @@ export default function PortalRobotica() {
                 <ArrowLeft className="w-3.5 h-3.5" /> Voltar para etapa anterior
               </button>
 
+              {/* Títulos */}
               <h3 className="text-3xl font-headline font-bold text-[#34495E] mb-2">Verificar Código</h3>
               <p className="text-sm text-[#34495E]/70 font-body mb-6">
                 Enviamos um código de 6 dígitos para seu e-mail.<br />Por favor, insira-o abaixo para continuar.
               </p>
 
+              {/* Formulário */}
               <form onSubmit={handleVerifyCode} className="space-y-6">
+                
+                {/* Inputs dos 6 dígitos do código */}
+                {/* Cada input tem apenas 1 dígito e auto-avança para o próximo */}
                 <div className="flex justify-between gap-2">
                   {recoveryCode.map((digit, idx) => (
                     <input
@@ -532,6 +654,7 @@ export default function PortalRobotica() {
                   ))}
                 </div>
 
+                {/* Botão de verificação */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -540,7 +663,9 @@ export default function PortalRobotica() {
                   {loading ? <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Verificar ➔'}
                 </button>
 
+                {/* Links de suporte e timer */}
                 <div className="text-center space-y-2">
+                  {/* Link para reenviar código */}
                   <p className="text-xs text-[#34495E]/80">
                     Não recebeu o código?{' '}
                     <button 
@@ -551,6 +676,7 @@ export default function PortalRobotica() {
                       Reenviar código
                     </button>
                   </p>
+                  {/* Timer regressivo (formatado em MM:SS) */}
                   <p className="text-xs font-headline tracking-widest font-bold text-gray-400 uppercase flex items-center justify-center gap-1">
                     ⏱ Expira em {formatTime(timer)}
                   </p>
@@ -559,9 +685,12 @@ export default function PortalRobotica() {
             </div>
           )}
 
-          {/* TELA 4: RECUPERAÇÃO - NOVA SENHA */}
+
+          {/* ========== TELA 4: RECUPERAÇÃO - ETAPA 3 (NOVA SENHA) ========== */}
           {screen === 'FORGOT_RESET' && (
             <div className="animate-fadeIn transition-all duration-300">
+              
+              {/* Botão de voltar */}
               <button 
                 onClick={() => setScreen('FORGOT_CODE')} 
                 className="flex items-center gap-1 text-xs font-bold text-[#004B93] hover:underline mb-6"
@@ -569,10 +698,14 @@ export default function PortalRobotica() {
                 <ArrowLeft className="w-3.5 h-3.5" /> Voltar para etapa anterior
               </button>
 
+              {/* Títulos */}
               <h3 className="text-3xl font-headline font-bold text-[#34495E] mb-2">Nova senha</h3>
               <p className="text-sm text-[#34495E]/70 font-body mb-6">Crie uma senha forte para proteger sua conta.</p>
 
+              {/* Formulário */}
               <form onSubmit={handleResetPassword} className="space-y-4">
+                
+                {/* Campo de nova senha */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1.5">Nova Senha</label>
                   <div className="relative">
@@ -584,12 +717,14 @@ export default function PortalRobotica() {
                       placeholder="••••••••••••"
                       className="w-full pl-4 pr-10 py-3 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none focus:border-[#004B93] focus:ring-2 focus:ring-[#004B93]/10 transition-all"
                     />
+                    {/* Botão para mostrar/ocultar senha */}
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600">
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
 
+                {/* Campo de confirmação de senha */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1.5">Confirmar Nova Senha</label>
                   <div className="relative">
@@ -601,28 +736,38 @@ export default function PortalRobotica() {
                       placeholder="••••••••••••"
                       className="w-full pl-4 pr-10 py-3 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none focus:border-[#004B93] focus:ring-2 focus:ring-[#004B93]/10 transition-all"
                     />
+                    {/* Botão para mostrar/ocultar confirmação */}
                     <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600">
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
 
+                {/* Box com requisitos de segurança */}
+                {/* Mostra checklist em tempo real dos requisitos */}
                 <div className="bg-[#F0F5FA] p-4 rounded-lg space-y-2 border border-blue-100/50">
                   <p className="text-xs font-headline font-bold uppercase tracking-wider text-[#34495E]/80 mb-2">Requisitos de segurança</p>
+                  
+                  {/* Requisito: Mínimo 8 caracteres */}
                   <div className="flex items-center gap-2 text-xs text-[#34495E]">
                     <CheckCircle2 className={`w-4 h-4 ${isLengthOk ? 'text-green-600' : 'text-gray-300'}`} />
                     <span>Pelo menos 8 caracteres</span>
                   </div>
+                  
+                  {/* Requisito: Pelo menos 1 número */}
                   <div className="flex items-center gap-2 text-xs text-[#34495E]">
                     <CheckCircle2 className={`w-4 h-4 ${hasNumber ? 'text-green-600' : 'text-gray-300'}`} />
                     <span>Pelo menos 1 número</span>
                   </div>
+                  
+                  {/* Requisito: Pelo menos 1 caractere especial */}
                   <div className="flex items-center gap-2 text-xs text-[#34495E]">
                     <CheckCircle2 className={`w-4 h-4 ${hasSpecial ? 'text-green-600' : 'text-gray-300'}`} />
                     <span>Pelo menos 1 caractere especial</span>
                   </div>
                 </div>
 
+                {/* Botão de submit */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -634,9 +779,12 @@ export default function PortalRobotica() {
             </div>
           )}
 
-          {/* TELA 5: CADASTRO */}
+
+          {/* ========== TELA 5: CADASTRO ========== */}
           {screen === 'REGISTER' && (
             <div className="animate-fadeIn transition-all duration-300">
+              
+              {/* Botão de voltar */}
               <button 
                 onClick={() => setScreen('LOGIN')} 
                 className="flex items-center gap-1 text-xs font-bold text-[#004B93] hover:underline mb-4"
@@ -644,11 +792,13 @@ export default function PortalRobotica() {
                 <ArrowLeft className="w-3.5 h-3.5" /> Voltar para o Login
               </button>
 
+              {/* Títulos */}
               <div className="mb-4">
                 <h3 className="text-3xl font-headline font-bold text-[#34495E] mb-1">Create Profile</h3>
                 <p className="text-xs text-[#34495E]/70 font-body">Fill in technical credentials to continue.</p>
               </div>
 
+              {/* Seletores de Perfil em layout horizontal com fundo cinza */}
               <div className="grid grid-cols-3 gap-2 mb-6 bg-[#F4F7FA] p-1 rounded-xl border border-gray-200">
                 {(['ADMIN', 'JUIZ', 'TECNICO'] as UserProfile[]).map((prof) => (
                   <button
@@ -661,6 +811,7 @@ export default function PortalRobotica() {
                         : 'text-[#34495E]/60 hover:text-[#34495E]'
                     }`}
                   >
+                    {/* Ícones para cada perfil */}
                     {prof === 'ADMIN' && <User className="w-3.5 h-3.5" />}
                     {prof === 'JUIZ' && <FileText className="w-3.5 h-3.5" />}
                     {prof === 'TECNICO' && <Building className="w-3.5 h-3.5" />}
@@ -669,7 +820,10 @@ export default function PortalRobotica() {
                 ))}
               </div>
 
+              {/* Formulário de cadastro */}
               <form onSubmit={handleRegister} className="space-y-4">
+                
+                {/* Campo de Nome Completo */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1">
                     {selectedProfile === 'JUIZ' ? 'Nome Completo/ Social' : 'Nome Completo'}
@@ -684,12 +838,17 @@ export default function PortalRobotica() {
                         regErrors.fullName ? 'border-red-500 focus:ring-1 focus:ring-red-200 bg-red-50/20' : 'border-transparent focus:border-[#004B93]'
                       }`}
                     />
+                    {/* Ícone de erro */}
                     {regErrors.fullName && <AlertCircle className="absolute right-3 top-3 w-4 h-4 text-red-500" />}
                   </div>
+                  {/* Mensagem de erro */}
                   {regErrors.fullName && <p className="text-xs text-red-500 font-medium mt-1">ⓘ {regErrors.fullName}</p>}
                 </div>
 
+                {/* Grid com 2 colunas (CPF e Email) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  
+                  {/* Campo de CPF */}
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1">CPF</label>
                     <input
@@ -705,6 +864,7 @@ export default function PortalRobotica() {
                     {regErrors.cpf && <p className="text-xs text-red-500 font-medium mt-1">{regErrors.cpf}</p>}
                   </div>
 
+                  {/* Campo de Email */}
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1">
                       {selectedProfile === 'TECNICO' ? 'E-mail' : 'E-mail Institucional'}
@@ -722,6 +882,7 @@ export default function PortalRobotica() {
                   </div>
                 </div>
 
+                {/* Campo de Código de Autorização (APENAS ADMIN e JUIZ) */}
                 {(selectedProfile === 'ADMIN' || selectedProfile === 'JUIZ') && (
                   <div>
                     <label className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1">
@@ -741,6 +902,7 @@ export default function PortalRobotica() {
                   </div>
                 )}
 
+                {/* Campo de Instituição (APENAS TECNICO) */}
                 {selectedProfile === 'TECNICO' && (
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1">Instituição de Ensino</label>
@@ -757,7 +919,10 @@ export default function PortalRobotica() {
                   </div>
                 )}
 
+                {/* Grid com 2 colunas (Senha e Confirmação) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  
+                  {/* Campo de Senha */}
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1">Senha</label>
                     <input
@@ -772,6 +937,7 @@ export default function PortalRobotica() {
                     {regErrors.password && <p className="text-xs text-red-500 font-medium mt-1">{regErrors.password}</p>}
                   </div>
 
+                  {/* Campo de Confirmação de Senha */}
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1">Confirmação de Senha</label>
                     <input
@@ -787,6 +953,7 @@ export default function PortalRobotica() {
                   </div>
                 </div>
 
+                {/* Botão de submit */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -796,6 +963,7 @@ export default function PortalRobotica() {
                 </button>
               </form>
 
+              {/* Link para voltar ao login */}
               <div className="text-center mt-6">
                 <p className="text-xs text-[#34495E]">
                   Já tenho conta?{' '}
@@ -803,6 +971,7 @@ export default function PortalRobotica() {
                 </p>
               </div>
 
+              {/* Rodapé com links de suporte */}
               <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between text-[10px] text-gray-400 font-bold uppercase tracking-wider">
                 <span>Protocolo v24.1.0</span>
                 <div className="space-x-4">
@@ -813,7 +982,9 @@ export default function PortalRobotica() {
             </div>
           )}
 
-          {/* RODAPÉ GERAL */}
+
+          {/* ========== RODAPÉ GERAL ========== */}
+          {/* Exibido apenas quando NÃO está na tela de cadastro */}
           {screen !== 'REGISTER' && (
             <div className="mt-12 flex justify-between text-[10px] text-gray-400 font-headline font-bold uppercase tracking-wider">
               <span>PROTOCOLO V24.1.0</span>
