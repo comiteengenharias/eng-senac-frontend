@@ -137,7 +137,7 @@ export default function AreaRestrita_Aluno() {
             <CardContent className="pt-6 space-y-4">
               <div className="bg-blue-50 border-l-4 border-[var(--blue)] p-4 rounded">
                 <p className="text-sm text-gray-700">
-                  Seu grupo atualmente está em <span className="font-bold text-[var(--blue)]">??? lugar (Premiação 11h30 no Demoiselle)</span>, com média <span className="font-bold text-[var(--blue)]">{getInfo?.ratings?.rankingAverage.toFixed(2)}</span>
+                  A média atual do grupo é: <span className="font-bold text-[var(--blue)]">{getInfo?.ratings?.rankingAverage.toFixed(2)}</span>
                 </p>
               </div>
 

@@ -386,7 +386,7 @@ export default function AreaRestrita() {
       setLoading(false)
       Swal.fire({
         title: 'Oops!',
-        text: "Erro ao se conectar com o servidor. Por favor, tente novamente mais tarde.",
+        text: "Estamos com problemas para processar seu cadastro. Por favor, entre em contato com o suporte.",
         icon: 'error',
         confirmButtonText: 'Ok',
         confirmButtonColor: '#003'
