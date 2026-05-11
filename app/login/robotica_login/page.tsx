@@ -6,9 +6,12 @@
 // - Image do Next.js para otimização de imagens
 // - Swal para exibir alertas customizados
 // - Ícones do Lucide React para a interface visual
+// - Yup para validação de formulários
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Swal from 'sweetalert2';
+import * as yup from 'yup';
+import GarrinhaIcon from '../../../components/GarrinhaIcon';
 import { 
   Lock, 
   Mail, 
@@ -20,8 +23,10 @@ import {
   AlertCircle, 
   PlusCircle, 
   User, 
+  Scale, 
+  Wrench, 
   FileText, 
-  Building 
+  Building
 } from 'lucide-react';
 
 // Define os tipos de perfil de usuário no sistema (Admin, Juiz, Técnico)
@@ -29,6 +34,51 @@ type UserProfile = 'ADMIN' | 'JUIZ' | 'TECNICO';
 
 // Define as diferentes telas que o componente pode exibir (Login, Registro, Recuperação de senha, etc)
 type CurrentScreen = 'LOGIN' | 'REGISTER' | 'FORGOT_EMAIL' | 'FORGOT_CODE' | 'FORGOT_RESET';
+
+// Schemas de validação com Yup
+const loginSchema = yup.object().shape({
+  email: yup.string().email('E-mail inválido').required('E-mail obrigatório'),
+  password: yup.string().required('Senha obrigatória'),
+});
+
+const recoveryEmailSchema = yup.object().shape({
+  email: yup.string().email('E-mail inválido').required('E-mail obrigatório'),
+});
+
+const recoveryCodeSchema = yup.object().shape({
+  code: yup.string().length(6, 'Código deve ter 6 dígitos').required('Código obrigatório'),
+});
+
+const resetPasswordSchema = yup.object().shape({
+  newPassword: yup.string()
+    .min(8, 'Mínimo 8 caracteres')
+    .matches(/\d/, 'Deve conter pelo menos 1 número')
+    .matches(/[!@#$%^&*(),.?":{}|<>]/, 'Deve conter pelo menos 1 caractere especial')
+    .required('Nova senha obrigatória'),
+  confirmPassword: yup.string()
+    .oneOf([yup.ref('newPassword')], 'As senhas não coincidem')
+    .required('Confirmação obrigatória'),
+});
+
+const registerSchema = yup.object().shape({
+  fullName: yup.string().required('Nome obrigatório'),
+  cpf: yup.string().min(11, 'CPF inválido').required('CPF obrigatório'),
+  email: yup.string().email('E-mail inválido').required('E-mail obrigatório'),
+  password: yup.string().min(8, 'Mínimo 8 caracteres').required('Senha obrigatória'),
+  confirmPassword: yup.string().oneOf([yup.ref('password')], 'As senhas não coincidem').required('Confirmação obrigatória'),
+  authCode: yup.string().when('profile', {
+    is: (profile: UserProfile) => profile === 'ADMIN' || profile === 'JUIZ',
+    then: (schema) => schema.required('Código de autorização obrigatório'),
+    otherwise: (schema) => schema.optional(),
+  }),
+  institution: yup.string().when('profile', {
+    is: 'TECNICO',
+    then: (schema) => schema.required('Instituição obrigatória'),
+    otherwise: (schema) => schema.optional(),
+  }),
+});
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
 export default function PortalRobotica() {
   // ========== ESTADOS DE NAVEGAÇÃO ==========
@@ -101,9 +151,6 @@ export default function PortalRobotica() {
   
   // Confirmação de senha no cadastro
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
-  
-  // Objeto que armazena mensagens de erro para cada campo do cadastro
-  const [regErrors, setRegErrors] = useState<{[key: string]: string}>({});
 
 
   // ========== EFEITO: Contador Regressivo ==========
@@ -130,41 +177,52 @@ export default function PortalRobotica() {
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
-
-
-  // ========== HANDLER: LOGIN ==========
   // Função chamada ao enviar o formulário de login
-  // Valida email e senha, simula requisição à API e exibe alerta de sucesso
+  // Valida email e senha usando Yup e envia para a API de robótica
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); // Previne recarga da página
-    setLoginError(''); // Limpa erros anteriores
+    e.preventDefault();
+    setLoginError('');
 
-    // Valida se o email tem formato correto
-    if (!validateEmail(loginEmail)) {
-      setLoginError('E-mail inválido');
-      return;
-    }
-    
-    // Valida se a senha foi preenchida
-    if (!loginPassword) {
-      setLoginError('Senha obrigatória');
-      return;
-    }
+    try {
+      await loginSchema.validate({ email: loginEmail, password: loginPassword });
+      setLoading(true);
 
-    // Simula envio de dados e aguarda resposta (1.5 segundos)
-    setLoading(true);
-    setTimeout(() => {
+      const response = await fetch(`${apiBaseUrl}/api/robotica/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: loginEmail,
+          password: loginPassword,
+        }),
+        credentials: 'include',
+      });
+
       setLoading(false);
-      // Exibe alerta de sucesso com ícone verde
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Falha ao autenticar.');
+      }
+
+      const data = await response.json();
       Swal.fire({
-        title: 'Acesso Liberado!',
-        text: `Bem-vindo ao portal, ${selectedProfile}.`,
+        title: 'Login bem-sucedido!',
+        text: `Bem-vindo, ${selectedProfile}.`,
         icon: 'success',
         confirmButtonColor: '#004B93',
         timer: 2000,
-        showConfirmButton: false
+        showConfirmButton: false,
       });
-    }, 1500);
+
+      // Aqui você pode redirecionar para a área restrita ou salvar o token
+      // window.location.href = '/area-restrita';
+      console.log('Login response:', data);
+    } catch (error: any) {
+      setLoading(false);
+      setLoginError(error.message || 'Erro no login.');
+    }
   };
 
   // ========== HANDLER: ENVIAR EMAIL DE RECUPERAÇÃO ==========
@@ -172,19 +230,19 @@ export default function PortalRobotica() {
   const handleSendRecoveryEmail = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Valida se o email foi preenchido e tem formato correto
-    if (!validateEmail(recoveryEmail)) {
-      Swal.fire({ icon: 'error', title: 'Erro', text: 'Insira um e-mail válido.', confirmButtonColor: '#004B93' });
-      return;
+    try {
+      recoveryEmailSchema.validateSync({ email: recoveryEmail });
+      
+      // Simula envio do email e avança para tela de código
+      setLoading(true);
+      setTimeout(() => {
+        setLoading(false);
+        setTimer(165); // Reseta o contador para 2 minutos e 45 segundos
+        setScreen('FORGOT_CODE'); // Muda para a tela de verificação do código
+      }, 1000);
+    } catch (error: any) {
+      Swal.fire({ icon: 'error', title: 'Erro', text: error.message, confirmButtonColor: '#004B93' });
     }
-    
-    // Simula envio do email e avança para tela de código
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setTimer(165); // Reseta o contador para 2 minutos e 45 segundos
-      setScreen('FORGOT_CODE'); // Muda para a tela de verificação do código
-    }, 1000);
   };
 
 
@@ -219,21 +277,20 @@ export default function PortalRobotica() {
   const handleVerifyCode = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Junta todos os 6 dígitos em uma string
     const fullCode = recoveryCode.join('');
     
-    // Valida se todos os 6 dígitos foram preenchidos
-    if (fullCode.length < 6) {
-      Swal.fire({ icon: 'warning', title: 'Código Incompleto', text: 'Preencha os 6 dígitos.', confirmButtonColor: '#004B93' });
-      return;
+    try {
+      recoveryCodeSchema.validateSync({ code: fullCode });
+      
+      // Simula validação do código no servidor
+      setLoading(true);
+      setTimeout(() => {
+        setLoading(false);
+        setScreen('FORGOT_RESET'); // Avança para tela de nova senha
+      }, 1000);
+    } catch (error: any) {
+      Swal.fire({ icon: 'warning', title: 'Código Incompleto', text: error.message, confirmButtonColor: '#004B93' });
     }
-    
-    // Simula validação do código no servidor
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setScreen('FORGOT_RESET'); // Avança para tela de nova senha
-    }, 1000);
   };
 
 
@@ -252,97 +309,106 @@ export default function PortalRobotica() {
   const handleResetPassword = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Valida se a senha atende aos requisitos de segurança
-    if (!isLengthOk || !hasNumber || !hasSpecial) {
-      Swal.fire({ icon: 'error', title: 'Senha fraca', text: 'Atenda a todos os requisitos de segurança.', confirmButtonColor: '#004B93' });
-      return;
+    try {
+      resetPasswordSchema.validateSync({ newPassword, confirmNewPassword });
+      
+      // Simula envio da nova senha para o servidor
+      setLoading(true);
+      setTimeout(() => {
+        setLoading(false);
+        // Exibe alerta de sucesso
+        Swal.fire({
+          title: 'Senha redefinida!',
+          text: 'Sua senha foi alterada com sucesso.',
+          icon: 'success',
+          confirmButtonColor: '#004B93'
+        }).then(() => {
+          // Após confirmar, volta para login e limpa os campos
+          setScreen('LOGIN');
+          setNewPassword('');
+          setConfirmNewPassword('');
+        });
+      }, 1500);
+    } catch (error: any) {
+      Swal.fire({ icon: 'error', title: 'Erro', text: error.message, confirmButtonColor: '#004B93' });
     }
-    
-    // Valida se as duas senhas digitadas são iguais
-    if (newPassword !== confirmNewPassword) {
-      Swal.fire({ icon: 'error', title: 'Senhas divergentes', text: 'A confirmação de senha não confere.', confirmButtonColor: '#004B93' });
-      return;
-    }
-
-    // Simula envio da nova senha para o servidor
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      // Exibe alerta de sucesso
-      Swal.fire({
-        title: 'Senha redefinida!',
-        text: 'Sua senha foi alterada com sucesso.',
-        icon: 'success',
-        confirmButtonColor: '#004B93'
-      }).then(() => {
-        // Após confirmar, volta para login e limpa os campos
-        setScreen('LOGIN');
-        setNewPassword('');
-        setConfirmNewPassword('');
-      });
-    }, 1500);
   };
 
 
   // ========== HANDLER: CADASTRO ==========
-  // Valida todos os campos do formulário de cadastro
-  // Os campos obrigatórios variam de acordo com o perfil selecionado
-  const handleRegister = (e: React.FormEvent) => {
+  // Valida todos os campos do formulário de cadastro usando Yup e envia para a API de robótica
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    const errors: {[key: string]: string} = {};
+    
+    const data = {
+      fullName: regFullName,
+      cpf: regCpf,
+      email: regEmail,
+      password: regPassword,
+      confirmPassword: regConfirmPassword,
+      authCode: regAuthCode,
+      institution: regInstitution,
+      profile: selectedProfile,
+    };
 
-    // Valida se o nome foi preenchido
-    if (!regFullName.trim()) errors.fullName = 'Campo obrigatório';
-    
-    // Valida se o CPF foi preenchido e tem no mínimo 11 dígitos
-    if (!regCpf.trim() || regCpf.length < 11) errors.cpf = 'CPF inválido';
-    
-    // Valida se o email tem formato correto
-    if (!validateEmail(regEmail)) errors.email = 'E-mail inválido';
-    
-    // ADMIN e JUIZ precisam de código de autorização
-    if ((selectedProfile === 'ADMIN' || selectedProfile === 'JUIZ') && !regAuthCode.trim()) {
-      errors.authCode = 'Código de autorização obrigatório';
-    }
-    
-    // TECNICO precisa informar a instituição
-    if (selectedProfile === 'TECNICO' && !regInstitution.trim()) {
-      errors.institution = 'Instituição obrigatória';
-    }
-    
-    // Valida se a senha tem no mínimo 8 caracteres
-    if (regPassword.length < 8) errors.password = 'Mínimo de 8 caracteres';
-    
-    // Valida se as duas senhas são iguais
-    if (regPassword !== regConfirmPassword) errors.confirmPassword = 'As senhas não coincidem';
+    try {
+      registerSchema.validateSync(data);
+      setLoading(true);
 
-    // Armazena os erros encontrados
-    setRegErrors(errors);
+      const body: any = {
+        email: regEmail,
+        password: regPassword,
+        name: regFullName,
+        cpf: regCpf,
+        typeUser: selectedProfile,
+      };
 
-    // Se houver erros, não prossegue com o cadastro
-    if (Object.keys(errors).length > 0) return;
+      const response = await fetch(`${apiBaseUrl}/api/robotica/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        credentials: 'include',
+      });
 
-    // Simula envio dos dados para o servidor
-    setLoading(true);
-    setTimeout(() => {
       setLoading(false);
-      // Exibe alerta de sucesso com o perfil criado
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => null);
+        let message = 'Falha ao cadastrar.';
+
+        try {
+          const errorData = errorText ? JSON.parse(errorText) : null;
+          message = errorData?.message || errorData?.detail || message;
+        } catch {
+          message = errorText || message;
+        }
+
+        throw new Error(message);
+      }
+
+      const responseData = await response.json();
       Swal.fire({
         title: 'Cadastro Realizado!',
-        text: `Perfil de ${selectedProfile} criado com sucesso.`,
+        text: 'Seu usuário foi criado com sucesso.',
         icon: 'success',
         confirmButtonColor: '#004B93'
       }).then(() => {
-        setScreen('LOGIN'); // Volta para tela de login
+        setScreen('LOGIN');
       });
-    }, 1500);
+
+      console.log('Register response:', responseData);
+    } catch (error: any) {
+      setLoading(false);
+      Swal.fire({ icon: 'error', title: 'Erro', text: error.message || 'Erro ao cadastrar.', confirmButtonColor: '#004B93' });
+    }
   };
 
   // ========== FUNÇÃO AUXILIAR: LIMPAR FORMULÁRIOS ==========
   // Reseta mensagens de erro e estados de visibilidade de senha
   const resetForms = () => {
     setLoginError('');
-    setRegErrors({});
     setShowPassword(false);
     setShowConfirmPassword(false);
   };
@@ -365,19 +431,22 @@ export default function PortalRobotica() {
       <div className="hidden lg:flex lg:w-1/2 bg-[#004B93] relative overflow-hidden flex-col justify-between p-12">
         
         {/* Imagem de background com overlay */}
-        <div className="absolute inset-0 z-0 bg-cover bg-center mix-blend-overlay opacity-30"
-             style={{ backgroundImage: 'url(/img/pictures/projects/robot.png)' }} />
+        <div className="absolute inset-0 z-0 bg-cover bg-center opacity-60"
+             style={{ backgroundImage: 'url(/img/pictures/robot.png)' }} />
+             
         
         {/* Gradiente overlay sobre a imagem para melhorar legibilidade */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#004B93]/90 via-[#004B93]/95 to-[#001f3f]/95 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#004B93]/75 via-[#004B93]/80 to-[#001f3f]/85 z-10" />
 
         {/* Conteúdo textual da sidebar (em cima dos overlays) */}
         <div className="relative z-20 max-w-lg">
           
-          {/* Badge "ROBOTIC_SYNC" com ponto animado */}
-          <div className="mb-8">
-            <span className="inline-flex items-center gap-2 bg-[#F7941D] text-white px-3 py-1.5 rounded font-headline font-bold text-xs tracking-widest uppercase shadow-sm">
-              <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+          {/* Badge "ROBOTIC_SYNC" com símbolo de garra robótica */}
+          <div className="mb-8 flex items-center gap-3">
+            <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#F7941D] text-white shadow-sm">
+              <GarrinhaIcon />
+            </span>
+            <span className="text-lg font-headline font-bold uppercase tracking-tight text-white">
               ROBOTIC_SYNC
             </span>
           </div>
@@ -400,7 +469,7 @@ export default function PortalRobotica() {
 
         {/* Logo do Senac no rodapé da sidebar */}
         <div className="relative z-20">
-          <Image src="/img/branding/logo-white.png" alt="Logo Senac" width={140} height={45} className="object-contain" priority />
+          <Image src="/img/icons/senac.png" alt="Logo Senac" width={140} height={45} className="object-contain" priority />
         </div>
       </div>
 
@@ -434,11 +503,11 @@ export default function PortalRobotica() {
                         : 'bg-[#F8FAFC] border-gray-200 hover:border-gray-300 opacity-70'
                     }`}
                   >
-                    {/* Emoji representativo de cada perfil */}
-                    <span className="text-xl mb-1">
-                      {prof === 'ADMIN' && '👤'}
-                      {prof === 'JUIZ' && '⚖️'}
-                      {prof === 'TECNICO' && '🔧'}
+                    {/* Ícone do perfil, mais parecido com o visual da imagem */}
+                    <span className="text-xl mb-1 text-[#004B93]">
+                      {prof === 'ADMIN' && <User className="w-5 h-5" />}
+                      {prof === 'JUIZ' && <Scale className="w-5 h-5" />}
+                      {prof === 'TECNICO' && <Wrench className="w-5 h-5" />}
                     </span>
                     {/* Rótulo do perfil */}
                     <span className={`text-xs font-headline font-bold tracking-tight ${selectedProfile === prof ? 'text-[#004B93]' : 'text-[#34495E]'}`}>
@@ -804,7 +873,7 @@ export default function PortalRobotica() {
                   <button
                     key={prof}
                     type="button"
-                    onClick={() => { setSelectedProfile(prof); setRegErrors({}); }}
+                    onClick={() => { setSelectedProfile(prof); }}
                     className={`py-2 rounded-lg font-headline font-bold text-xs tracking-tight transition-all flex items-center justify-center gap-1 ${
                       selectedProfile === prof 
                         ? 'bg-white text-[#004B93] shadow-sm ring-1 ring-black/5' 
@@ -823,27 +892,20 @@ export default function PortalRobotica() {
               {/* Formulário de cadastro */}
               <form onSubmit={handleRegister} className="space-y-4">
                 
-                {/* Campo de Nome Completo */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1">
-                    {selectedProfile === 'JUIZ' ? 'Nome Completo/ Social' : 'Nome Completo'}
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={regFullName}
-                      onChange={(e) => setRegFullName(e.target.value)}
-                      placeholder={selectedProfile === 'TECNICO' ? "Ex: Roberto Carlos da Silva" : "John Doe"}
-                      className={`w-full pl-3 pr-8 py-2.5 bg-[#F4F7FA] border rounded-lg text-sm focus:outline-none transition-all ${
-                        regErrors.fullName ? 'border-red-500 focus:ring-1 focus:ring-red-200 bg-red-50/20' : 'border-transparent focus:border-[#004B93]'
-                      }`}
-                    />
-                    {/* Ícone de erro */}
-                    {regErrors.fullName && <AlertCircle className="absolute right-3 top-3 w-4 h-4 text-red-500" />}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1">
+                      {selectedProfile === 'JUIZ' ? 'Nome Completo/ Social' : 'Nome Completo'}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={regFullName}
+                        onChange={(e) => setRegFullName(e.target.value)}
+                        placeholder={selectedProfile === 'TECNICO' ? "Ex: Roberto Carlos da Silva" : "John Doe"}
+                        className="w-full pl-3 pr-8 py-2.5 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none transition-all focus:border-[#004B93]"
+                      />
+                    </div>
                   </div>
-                  {/* Mensagem de erro */}
-                  {regErrors.fullName && <p className="text-xs text-red-500 font-medium mt-1">ⓘ {regErrors.fullName}</p>}
-                </div>
 
                 {/* Grid com 2 colunas (CPF e Email) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -857,11 +919,8 @@ export default function PortalRobotica() {
                       value={regCpf}
                       onChange={(e) => setRegCpf(e.target.value)}
                       placeholder="000.000.000-00"
-                      className={`w-full px-3 py-2.5 bg-[#F4F7FA] border rounded-lg text-sm focus:outline-none transition-all ${
-                        regErrors.cpf ? 'border-red-500 bg-red-50/20' : 'border-transparent focus:border-[#004B93]'
-                      }`}
+                      className="w-full px-3 py-2.5 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none transition-all focus:border-[#004B93]"
                     />
-                    {regErrors.cpf && <p className="text-xs text-red-500 font-medium mt-1">{regErrors.cpf}</p>}
                   </div>
 
                   {/* Campo de Email */}
@@ -874,11 +933,8 @@ export default function PortalRobotica() {
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value)}
                       placeholder="nome.sobrenome@senacsp.edu.br"
-                      className={`w-full px-3 py-2.5 bg-[#F4F7FA] border rounded-lg text-sm focus:outline-none transition-all ${
-                        regErrors.email ? 'border-red-500 bg-red-50/20' : 'border-transparent focus:border-[#004B93]'
-                      }`}
+                      className="w-full px-3 py-2.5 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none transition-all focus:border-[#004B93]"
                     />
-                    {regErrors.email && <p className="text-xs text-red-500 font-medium mt-1">{regErrors.email}</p>}
                   </div>
                 </div>
 
@@ -894,11 +950,8 @@ export default function PortalRobotica() {
                       value={regAuthCode}
                       onChange={(e) => setRegAuthCode(e.target.value)}
                       placeholder="RA-XXXX-XXXX"
-                      className={`w-full px-3 py-2.5 bg-[#F4F7FA] border rounded-lg text-sm uppercase focus:outline-none transition-all ${
-                        regErrors.authCode ? 'border-red-500 bg-red-50/20' : 'border-transparent focus:border-[#004B93]'
-                      }`}
+                      className="w-full px-3 py-2.5 bg-[#F4F7FA] border border-transparent rounded-lg text-sm uppercase focus:outline-none transition-all focus:border-[#004B93]"
                     />
-                    {regErrors.authCode && <p className="text-xs text-red-500 font-medium mt-1">{regErrors.authCode}</p>}
                   </div>
                 )}
 
@@ -911,11 +964,8 @@ export default function PortalRobotica() {
                       value={regInstitution}
                       onChange={(e) => setRegInstitution(e.target.value)}
                       placeholder="Ex: SENAC Robotics Lab"
-                      className={`w-full px-3 py-2.5 bg-[#F4F7FA] border rounded-lg text-sm focus:outline-none transition-all ${
-                        regErrors.institution ? 'border-red-500 bg-red-50/20' : 'border-transparent focus:border-[#004B93]'
-                      }`}
+                      className="w-full px-3 py-2.5 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none transition-all focus:border-[#004B93]"
                     />
-                    {regErrors.institution && <p className="text-xs text-red-500 font-medium mt-1">{regErrors.institution}</p>}
                   </div>
                 )}
 
@@ -930,11 +980,8 @@ export default function PortalRobotica() {
                       value={regPassword}
                       onChange={(e) => setRegPassword(e.target.value)}
                       placeholder="••••••••"
-                      className={`w-full px-3 py-2.5 bg-[#F4F7FA] border rounded-lg text-sm focus:outline-none transition-all ${
-                        regErrors.password ? 'border-red-500 bg-red-50/20' : 'border-transparent focus:border-[#004B93]'
-                      }`}
+                      className="w-full px-3 py-2.5 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none transition-all focus:border-[#004B93]"
                     />
-                    {regErrors.password && <p className="text-xs text-red-500 font-medium mt-1">{regErrors.password}</p>}
                   </div>
 
                   {/* Campo de Confirmação de Senha */}
@@ -945,11 +992,8 @@ export default function PortalRobotica() {
                       value={regConfirmPassword}
                       onChange={(e) => setRegConfirmPassword(e.target.value)}
                       placeholder="••••••••"
-                      className={`w-full px-3 py-2.5 bg-[#F4F7FA] border rounded-lg text-sm focus:outline-none transition-all ${
-                        regErrors.confirmPassword ? 'border-red-500 bg-red-50/20' : 'border-transparent focus:border-[#004B93]'
-                      }`}
+                      className="w-full px-3 py-2.5 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none transition-all focus:border-[#004B93]"
                     />
-                    {regErrors.confirmPassword && <p className="text-xs text-red-500 font-medium mt-1">{regErrors.confirmPassword}</p>}
                   </div>
                 </div>
 
