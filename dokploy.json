@@ -1,0 +1,27 @@
+{
+  "buildCommand": "npm run build",
+  "startCommand": "npm start",
+  "environment": [
+    {
+      "key": "NODE_ENV",
+      "value": "production"
+    },
+    {
+      "key": "NEXT_TELEMETRY_DISABLED",
+      "value": "1"
+    }
+  ],
+  "ports": [
+    {
+      "internal": 3000,
+      "external": 3000
+    }
+  ],
+  "healthCheck": {
+    "enabled": true,
+    "interval": 30,
+    "timeout": 3,
+    "startPeriod": 40,
+    "retries": 3
+  }
+}
