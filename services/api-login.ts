@@ -1,12 +1,4 @@
-import axios, { AxiosResponse } from 'axios';
-import https from 'https';
-
-// URL base da API
-const projectUrl = process.env.NEXT_PUBLIC_API_URL;
-
-const httpsAgent = new https.Agent({
-    rejectUnauthorized: false //true em produção
-});
+import apiClient from './api-client';
 
 interface LoginData {
     email: string
@@ -21,13 +13,9 @@ export async function loginStudent(credentials: LoginData): Promise<any> {
     };
 
     try {
-        const response = await axios.post(`${projectUrl}/api/login/student`, data, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
-        })
+        const response = await apiClient.post('/api/login/student', data, {
+            withCredentials: true,
+        });
 
         return response;
 
@@ -44,13 +32,9 @@ export async function loginTeacher(credentials: LoginData): Promise<any> {
     };
 
     try {
-        const response = await axios.post(`${projectUrl}/api/Login/Teacher`, data, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
-        })
+        const response = await apiClient.post('/api/Login/Teacher', data, {
+            withCredentials: true,
+        });
 
         return response.data;
 
@@ -66,13 +50,9 @@ export async function loginSupport(password: string): Promise<any> {
     };
 
     try {
-        const response = await axios.post(`${projectUrl}/api/login/support`, data, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
-        })
+        const response = await apiClient.post('/api/login/support', data, {
+            withCredentials: true,
+        });
 
         return response;
 
@@ -83,12 +63,8 @@ export async function loginSupport(password: string): Promise<any> {
 
 export async function verifyLogin(): Promise<any> {
     try {
-        const response = await axios.post(`${projectUrl}/api/verify-login`, {}, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.post('/api/verify-login', {}, {
+            withCredentials: true,
         });
 
         return response.data;
@@ -101,13 +77,9 @@ export async function verifyLogin(): Promise<any> {
 export async function logout(): Promise<any> {
 
     try {
-        const response = await axios.post(`${projectUrl}/api/Logout`, {}, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
-        })
+        const response = await apiClient.post('/api/Logout', {}, {
+            withCredentials: true,
+        });
 
         return response.data;
 
@@ -118,12 +90,8 @@ export async function logout(): Promise<any> {
 
 export async function recoverStudentPassword(institutionalEmail: string): Promise<any> {
     try {
-        const response = await axios.post(`${projectUrl}/api/recover-password/student`, institutionalEmail, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.post('/api/recover-password/student', institutionalEmail, {
+            withCredentials: true,
         });
 
         return response.data;
@@ -135,12 +103,8 @@ export async function recoverStudentPassword(institutionalEmail: string): Promis
 
 export async function recoverTeacherPassword(institutionalEmail: string): Promise<any> {
     try {
-        const response = await axios.post(`${projectUrl}/api/recover-password/teacher`, institutionalEmail, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.post('/api/recover-password/teacher', institutionalEmail, {
+            withCredentials: true,
         });
 
         return response.data;

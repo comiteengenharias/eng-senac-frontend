@@ -1,12 +1,4 @@
-import axios, { AxiosResponse } from 'axios';
-import https from 'https';
-
-// URL base da API
-const projectUrl = process.env.NEXT_PUBLIC_API_URL;
-
-const httpsAgent = new https.Agent({
-    rejectUnauthorized: false //true em produção
-});
+import apiClient from './api-client';
 
 interface RegisterLeaderData {
     newStudent: {
@@ -30,12 +22,7 @@ interface RegisterLeaderData {
 
 export async function postLeaderRegistration(data: RegisterLeaderData) {
     try {
-        const response = await axios.post(`${projectUrl}/api/Register/Leader`, data, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
+        const response = await apiClient.post('/api/Register/Leader', data);
 
         return response.data;
 
@@ -62,12 +49,7 @@ interface RegisterMemberData {
 
 export async function postMemberRegistration(data: RegisterMemberData) {
     try {
-        const response = await axios.post(`${projectUrl}/api/Register/Member`, data, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
+        const response = await apiClient.post('/api/Register/Member', data);
 
         return response.data;
 
@@ -88,12 +70,7 @@ interface RegisterTeacherData {
 
 export async function postTeacherRegistration(data: RegisterTeacherData) {
   try {
-    const response = await axios.post(`${projectUrl}/api/Register/Teacher`, data, {
-      httpsAgent,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    });
+    const response = await apiClient.post('/api/Register/Teacher', data);
 
     return response.data;
   } catch (error: any) {
