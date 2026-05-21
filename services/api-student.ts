@@ -1,22 +1,11 @@
-import axios, { AxiosResponse } from 'axios';
-import https from 'https';
-
-// URL base da API
-const projectUrl = process.env.NEXT_PUBLIC_API_URL;
-
-const httpsAgent = new https.Agent({
-    rejectUnauthorized: false //true em produção
-});
+import { AxiosResponse } from 'axios';
+import apiClient from './api-client';
 
 
 export async function getStudentInfo() {
     try {
-        const response = await axios.get(`${projectUrl}/api/student/info`, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.get('/api/student/info', {
+            withCredentials: true,
         })
 
         return response.data;
@@ -33,12 +22,8 @@ interface RegisterLeaderData {
 
 export async function postChangePassword(data: RegisterLeaderData) {
     try {
-        const response = await axios.post(`${projectUrl}/api/student/change-password`, data, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.post('/api/student/change-password', data, {
+            withCredentials: true,
         })
 
         return response.data;
@@ -50,12 +35,8 @@ export async function postChangePassword(data: RegisterLeaderData) {
 
 export async function getSummaryInfo() {
     try {
-        const response = await axios.get(`${projectUrl}/api/student/summary-info`, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.get('/api/student/summary-info', {
+            withCredentials: true,
         })
 
         return response.data;
@@ -67,12 +48,8 @@ export async function getSummaryInfo() {
 
 export async function getProjectInfo() {
     try {
-        const response = await axios.get(`${projectUrl}/api/student/project-info`, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.get('/api/student/project-info', {
+            withCredentials: true,
         })
 
         return response.data;
@@ -84,12 +61,8 @@ export async function getProjectInfo() {
 
 export async function getLecturesInfo() {
     try {
-        const response = await axios.get(`${projectUrl}/api/student/lectures`, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.get('/api/student/lectures', {
+            withCredentials: true,
         })
 
         return response.data;
@@ -101,12 +74,8 @@ export async function getLecturesInfo() {
 
 export async function getBusinessInfo() {
     try {
-        const response = await axios.get(`${projectUrl}/api/student/business`, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.get('/api/student/business', {
+            withCredentials: true,
         })
 
         return response.data;
@@ -132,16 +101,10 @@ export async function postBusinessAssessment(data: BusinessAssessmentForm) {
     formData.append('file', data.image); // o backend espera como 'file'
 
     try {
-        const response: AxiosResponse = await axios.post(
-            `${projectUrl}/api/student/business-assessment`,
+        const response: AxiosResponse = await apiClient.post(
+            '/api/student/business-assessment',
             formData,
-            {
-                httpsAgent,
-                withCredentials: true,
-                headers: {
-                    // o axios define automaticamente multipart/form-data com boundary
-                }
-            }
+            { withCredentials: true }
         );
 
         return response.data;
@@ -157,12 +120,8 @@ export interface StudentOtherProjectsFilters {
 
 export async function getOtherProjectsData(filters: StudentOtherProjectsFilters) {
     try {
-        const response = await axios.post(`${projectUrl}/api/student/other-projects`, filters, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.post('/api/student/other-projects', filters, {
+            withCredentials: true,
         })
 
         return response.data;
@@ -188,16 +147,10 @@ export async function postEvaluateOtherProjects(data: ProjectAssessmentForm) {
     formData.append('file', data.image); // o backend espera como 'file'
 
     try {
-        const response: AxiosResponse = await axios.post(
-            `${projectUrl}/api/student/evaluate-other-projects`,
+        const response: AxiosResponse = await apiClient.post(
+            '/api/student/evaluate-other-projects',
             formData,
-            {
-                httpsAgent,
-                withCredentials: true,
-                headers: {
-                    // o axios define automaticamente multipart/form-data com boundary
-                }
-            }
+            { withCredentials: true }
         );
         
         return response.data;
@@ -220,10 +173,8 @@ export async function deliverProjectFiles(files: {
     });
 
     try {
-        const response = await axios.post(`${projectUrl}/api/student/deliver-project`, formData, {
-            httpsAgent,
+        const response = await apiClient.post('/api/student/deliver-project', formData, {
             withCredentials: true,
-            headers: {}
         });
 
         return response.data;

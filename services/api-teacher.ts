@@ -1,22 +1,11 @@
-import axios, { AxiosResponse } from 'axios';
-import https from 'https';
-
-// URL base da API
-const projectUrl = process.env.NEXT_PUBLIC_API_URL;
-
-const httpsAgent = new https.Agent({
-    rejectUnauthorized: false //true em produção
-});
+import { AxiosResponse } from 'axios';
+import apiClient from './api-client';
 
 
 export async function getTeacherInfo() {
     try {
-        const response = await axios.get(`${projectUrl}/api/teacher/info`, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.get('/api/teacher/info', {
+            withCredentials: true,
         })
 
         return response.data;
@@ -33,12 +22,8 @@ interface RegisterLeaderData {
 
 export async function postChangePassword(data: RegisterLeaderData) {
     try {
-        const response = await axios.post(`${projectUrl}/api/teacher/change-password`, data, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.post('/api/teacher/change-password', data, {
+            withCredentials: true,
         })
 
         return response.data;
@@ -55,12 +40,8 @@ export interface TeacherProjectsFilters {
 
 export async function getProjectsData(filters: TeacherProjectsFilters) {
     try {
-        const response = await axios.post(`${projectUrl}/api/teacher/projects`, filters, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+        const response = await apiClient.post('/api/teacher/projects', filters, {
+            withCredentials: true,
         })
 
         return response.data;
@@ -81,16 +62,10 @@ interface ProjectNotesForm {
 export async function postEvaluateProjects(data: ProjectNotesForm) {
 
     try {
-        const response: AxiosResponse = await axios.post(
-            `${projectUrl}/api/teacher/evaluate-projects`,
+        const response: AxiosResponse = await apiClient.post(
+            '/api/teacher/evaluate-projects',
             data,
-            {
-                httpsAgent,
-                withCredentials: true,
-                headers: {
-                    // multipart/form-data com boundary será gerenciado automaticamente
-                }
-            }
+            { withCredentials: true }
         );
 
         return response.data;
@@ -130,15 +105,11 @@ export interface FinalNotesFilters {
 export async function getFinalNotes(
     filters: FinalNotesFilters
 ): Promise<{ data: StudentPerformance[]; total: number }> {
-    const response = await axios.post(
-        `${projectUrl}/api/teacher/final-notes`,
+    const response = await apiClient.post(
+        '/api/teacher/final-notes',
         filters,
         {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+            withCredentials: true,
         }
     );
 
@@ -146,14 +117,10 @@ export async function getFinalNotes(
 }
 
 export async function getPointMaterials(): Promise<{ total: number; data: string[] }> {
-    const response = await axios.get(
-        `${projectUrl}/api/teacher/point-materials`,
+    const response = await apiClient.get(
+        '/api/teacher/point-materials',
         {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+            withCredentials: true,
         }
     );
 
@@ -181,15 +148,11 @@ export interface RankingProject {
 
 export async function getProjectRankingBySemester(semester: number): Promise<RankingProject[]> {
     try {
-        const response = await axios.post(`${projectUrl}/api/teacher/top-projects-ranking`, {
+        const response = await apiClient.post('/api/teacher/top-projects-ranking', {
             semester: semester,
             groupName: ""
         }, {
-            httpsAgent,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
+            withCredentials: true,
         });
 
         return response.data;
