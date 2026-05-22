@@ -529,8 +529,9 @@ export default function AreaRestrita() {
                 </div>
 
                 <div className="mt-4">
-                  <label htmlFor="input-personal-email" className="block text-sm font-semibold text-gray-700 mb-2">E-mail pessoal (opcional)</label>
+                  <label htmlFor="input-personal-email" className="block text-sm font-semibold text-gray-700 mb-2">E-mail pessoal</label>
                   <input
+                    required
                     type="email"
                     id="input-personal-email"
                     name="personal-email"
