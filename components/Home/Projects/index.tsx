@@ -20,10 +20,19 @@ export default function Projects() {
         {
             title: "Produção de Cerveja",
             text: [
-                "Alunos do 4º semestre desenvolveram um sensor de temperatura focado em automatização no processo industrial de fabricação de cerveja.",
+                "Alunos do 3º semestre desenvolveram um sensor de temperatura focado em automatização no processo industrial de fabricação de cerveja.",
                 "Para aplicação do projeto em um cenário real, com o auxílio de mestres cervejeiros, os alunos utilizaram o equipamento para fabricar sua própria cerveja."
             ],
             img: "/img/projects/cerveja.jpg"
+        },
+        
+        {
+            title: "Automação de Processos Logísticos",
+            text: [
+                "Alunos do 4º semestre desenvolveram um sistema integrado de automação voltado para processos logísticos e empresariais, utilizando dispositivos de leitura de código de barras para otimizar o controle de estoque e rastreamento de produtos.",
+                "A solução permite a integração entre hardware e software, automatizando etapas como entrada, saída e movimentação de mercadorias, reduzindo erros manuais e aumentando a eficiência operacional."
+            ],
+            img: "/img/projects/scanner.jpeg"
         }
     ]
 
