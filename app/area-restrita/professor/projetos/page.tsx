@@ -31,7 +31,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { getProjectsData, TeacherProjectsFilters, postEvaluateProjects } from "@/services/api-teacher";
-import { verifyLogin } from "@/services/api-login";
+import { logout, verifyLogin } from "@/services/api-login";
 import LoadingOverlay from "@/components/system/loading-overlay";
 import { Search, RotateCcw } from "lucide-react";
 import Swal from "sweetalert2";
@@ -78,7 +78,9 @@ export default function AreaRestrita_Professor() {
     (async () => {
       const data = await verifyLogin();
       if (!data || data.role !== 'Teacher') {
-        router.push('/');
+        logout().then(() => {
+          router.push('/');
+        });
       }
     })();
   }, [router]);

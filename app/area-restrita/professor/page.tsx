@@ -138,8 +138,9 @@ export default function AreaRestrita_Teacher() {
         const response = await getTeacherInfo();
         const message: string = response?.message ?? '';
         if (!response || message.toLowerCase().includes('not found') || message.toLowerCase().includes('não encontrado')) {
-          logout();
-          router.push('/');
+          logout().then(() => {
+            router.push('/');
+          });
           return;
         }
         // Se a resposta vem com a estrutura { teacher, panels }
@@ -157,8 +158,9 @@ export default function AreaRestrita_Teacher() {
         const status = error?.response?.status;
         const message: string = error?.response?.data?.message ?? '';
         if (status === 404 || message.toLowerCase().includes('not found') || message.toLowerCase().includes('não encontrado')) {
-          logout();
-          router.push('/');
+          logout().then(() => {
+            router.push('/');
+          });
           return;
         }
         console.error('Erro ao carregar dados do professor:', error);

@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import "../cadastro.css";
 import { useRouter } from "next/navigation";
-import { loginTeacher, verifyLogin } from "@/services/api-login";
+import { loginTeacher, logout, verifyLogin } from "@/services/api-login";
 import Swal from "sweetalert2";
 import LoadingOverlay from "@/components/system/loading-overlay";
 
@@ -25,7 +25,9 @@ export default function AreaRestrita() {
         } else if (data.role === 'Support') {
           router.push('/area-restrita/apoio');
         } else {
-          router.push('/');
+          logout().then(() => {
+            router.push('/');
+          });
         }
       }
     })();

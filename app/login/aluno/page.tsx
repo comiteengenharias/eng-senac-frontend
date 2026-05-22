@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from "next/image";
 import Swal from 'sweetalert2'
-import { loginStudent, recoverStudentPassword, verifyLogin } from "@/services/api-login";
+import { loginStudent, logout, recoverStudentPassword, verifyLogin } from "@/services/api-login";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import LoadingOverlay from '@/components/system/loading-overlay';
@@ -25,7 +25,9 @@ export default function LoginAluno() {
 				} else if (data.role === 'Support') {
 					router.push('/area-restrita/apoio');
 				} else {
-					router.push('/');
+					logout().then(() => {
+						router.push('/');
+					});
 				}
 			} else {
 				setLoading(false)

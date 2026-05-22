@@ -19,8 +19,9 @@ export default function AreaRestrita_Apoio_GerarQr() {
     (async () => {
       const data = await verifyLogin();
       if (!data || data == null || data.role !== 'Support') {
-        logout();
-        router.push('/');
+        logout().then(() => {
+            router.push('/');
+        });
       } else {
         setLoading(false);
       }

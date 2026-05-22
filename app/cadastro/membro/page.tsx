@@ -7,7 +7,7 @@ import Link from "next/link";
 import "../cadastro.css";
 import { postMemberRegistration } from "@/services/api-register";
 import { useRouter } from 'next/navigation';
-import { loginStudent, verifyLogin } from '@/services/api-login';
+import { loginStudent, logout, verifyLogin } from '@/services/api-login';
 import LoadingOverlay from '@/components/system/loading-overlay';
 
 // Mapeamento de matérias por curso e semestre (sem disciplinas de "Projeto")
@@ -177,7 +177,9 @@ export default function AreaRestrita() {
         } else if (data.role === 'Support') {
           router.push('/area-restrita/apoio');
         } else {
-          router.push('/');
+          logout().then(() => {
+            router.push('/');
+          });
         }
       } else {
         setLoading(false);
