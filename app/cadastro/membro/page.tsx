@@ -366,7 +366,7 @@ export default function AreaRestrita() {
     try {
       const response = await postMemberRegistration(data);
       setLoading(false)
-      
+
       await Swal.fire({
         title: 'Cadastro realizado com sucesso',
         text: 'Mais informações foram enviadas para o seu e-mail',
@@ -413,7 +413,7 @@ export default function AreaRestrita() {
           <div className="grid lg:grid-cols-3 gap-0 rounded-2xl shadow-2xl w-full max-h-[calc(100vh-3rem)]">
             {/* Left Side - Image (Desktop Only) */}
             <div className="hidden lg:flex col-span-1 relative bg-gradient-to-br from-[#0066cc] to-[#0052a3] rounded-l-2xl items-center justify-center">
-              <Image 
+              <Image
                 unoptimized
                 src="/img/pictures/picture_senac_engineer03.jpg"
                 alt="Engenharias Senac"
@@ -431,7 +431,7 @@ export default function AreaRestrita() {
             {/* Right Side - Form */}
             <div className="bg-white lg:col-span-2 lg:rounded-r-2xl rounded-2xl p-6 sm:p-8 flex flex-col min-h-0 max-h-full overflow-hidden">
               <div className="mb-4 flex justify-center lg:hidden shrink-0">
-                <Image 
+                <Image
                   unoptimized
                   src="/img/branding/logo-blue.png"
                   alt="Logo Senac"
@@ -440,7 +440,7 @@ export default function AreaRestrita() {
                 />
               </div>
               <div className="hidden lg:flex mb-6 shrink-0">
-                <Image 
+                <Image
                   unoptimized
                   src="/img/branding/logo-blue.png"
                   alt="Logo Senac"
@@ -451,200 +451,201 @@ export default function AreaRestrita() {
               <h2 className="text-black text-2xl sm:text-3xl font-bold mb-1 shrink-0">Cadastro de <span className="text-[#0066cc]">Membro</span></h2>
               <p className="text-gray-600 text-sm mb-6 shrink-0">Preencha os dados abaixo para ingressar em um projeto existente</p>
               <form className="space-y-4 lg:space-y-5 text-sm overflow-y-auto flex-1 p-1" id="register-form" onSubmit={sendData}>
-              <div>
-                <label htmlFor="input-name" className="block text-sm font-semibold text-gray-700 mb-2">Nome completo</label>
-                <input
-                  type="text"
-                  id="input-username"
-                  name="username"
-                  placeholder="Ex: Maria Silva"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
-                />
-              </div>
-              <div>
-                <label htmlFor="input-id-senac" className="block text-sm font-semibold text-gray-700 mb-2">ID do Senac <span className="text-xs cursor-help" title="Acesse sua área exclusiva Senac > Na aba 'Serviços ao Aluno' selecione 'Nota/menção, frequência e financeiro' > 'Notas/Menções e Atividades' > O ID do Senac aparecerá no topo na página">ℹ️</span></label>
-                <input
-                  type="number"
-                  id="input-id-senac"
-                  name="id-senac"
-                  placeholder="Ex: 0123456789"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-              </div>
-              <div>
-                <label htmlFor="input-name" className="block text-sm font-semibold text-gray-700 mb-2">Token do Grupo</label>
-                <input
-                  type="text"
-                  id="input-group-token"
-                  name="group-token"
-                  placeholder="Ex: X0X0X0"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="input-email" className="block text-sm font-semibold text-gray-700 mb-2">E-mail institucional</label>
-                <input
-                  type="email"
-                  id="input-email-inst"
-                  name="email-inst"
-                  placeholder="Ex: maria@senacsp.edu.br"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
-                />
-              </div>
-              <div>
-                <label htmlFor="input-personal-email" className="block text-sm font-semibold text-gray-700 mb-2">E-mail pessoal (opcional)</label>
-                <input
-                  type="email"
-                  id="input-personal-email"
-                  name="personal-email"
-                  placeholder="Ex: maria@gmail.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="input-phone" className="block text-sm font-semibold text-gray-700 mb-2">Celular</label>
-                <input
-                  required
-                  type="tel"
-                  id="input-phone"
-                  name="phone"
-                  placeholder="Ex: (11) 91234-5678"
-                  value={phone}
-                  onInput={(e) => {
-                    let value = e.currentTarget.value.replace(/\D/g, '');
-                    if (value.length > 11) value = value.slice(0, 11);
-                    if (value.length > 6) {
-                      value = value.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
-                    } else if (value.length > 2) {
-                      value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
-                    } else {
-                      value = value.replace(/^(\d{0,2})/, '($1');
-                    }
-                    setPhone(value);
-                  }}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
-                />
-              </div>
-              <div>
-                <label htmlFor="input-course" className="block text-sm font-semibold text-gray-700 mb-2">Curso</label>
-                <select
-                  id="input-course"
-                  name="course"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
-                  value={course}
-                  onChange={(e) => {
-                    setCourse(e.target.value);
-                    setSubject('');
-                  }}
-                >
-                  <option value="">Selecione seu curso</option>
-                  <option value="comp">Engenharia da Computação</option>
-                  <option value="prod">Engenharia de Produção</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="input-semester" className="block text-sm font-semibold text-gray-700 mb-2">Semestre</label>
-                <select
-                  id="input-semester"
-                  name="semester"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
-                  value={semester}
-                  onChange={(e) => {
-                    setSemester(e.target.value);
-                    setSubject('');
-                  }}
-                >
-                  <option value="">Selecione seu semestre</option>
-                  {Array.from({ length: 5 }, (_, i) => {
-                    const value = i * 2 + 1
-                    return (
-                      <option key={value} value={value}>
-                        {`${value}º semestre`}
-                      </option>
-                    )
-                  })}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="input-subject" className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  Matéria para designar ponto
-                  <span className="text-xs cursor-help" title="Os pontos extras obtidos durante a Semana das Engenharias (palestras, gamificações, etc) serão alocados nesta matéria.">ℹ️</span>
-                </label>
-                <select
-                  required
-                  id="input-subject"
-                  name="subject"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all disabled:bg-gray-100 disabled:text-gray-500"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  disabled={!course || !semester || availableSubjects.length === 0}
-                >
-                  <option value="">
-                    {(!course || !semester)
-                      ? "Selecione primeiro o curso e o semestre"
-                      : availableSubjects.length === 0
-                        ? "Nenhuma matéria disponível para esta combinação"
-                        : "Selecione a matéria"}
-                  </option>
-                  {availableSubjects.map((subj) => (
-                    <option key={subj} value={subj}>
-                      {subj}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="pt-2">
-                <label htmlFor="input-password" className="block text-sm font-semibold text-gray-700 mb-2">Senha</label>
-                <input
-                  type="password"
-                  id="input-password"
-                  name="password"
-                  placeholder="Ex: Senac@123"
-                  onInput={(e) => setPassword(e.currentTarget.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
-                />
-              </div>
-              <div>
-                <label htmlFor="input-confirm-password" className="block text-sm font-semibold text-gray-700 mb-2">Confirmar senha</label>
-                <input
-                  type="password"
-                  id="input-confirm-password"
-                  name="confirm-password"
-                  placeholder="Repita a senha"
-                  onInput={(e) => setConfirmPassword(e.currentTarget.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
-                />
-              </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="text-xs font-semibold text-gray-700 mb-3">Crie sua senha utilizando:</div>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2 text-xs text-gray-700">{getIcon(validations.characters)} <span>Caracteres especiais</span></div>
-                  <div className="flex items-center gap-2 text-xs text-gray-700">{getIcon(validations.lettersLow)} <span>Letras minúsculas</span></div>
-                  <div className="flex items-center gap-2 text-xs text-gray-700">{getIcon(validations.lettersCap)} <span>Letras maiúsculas</span></div>
-                  <div className="flex items-center gap-2 text-xs text-gray-700">{getIcon(validations.length)} <span>Mínimo 8 caracteres</span></div>
-                  <div className="flex items-center gap-2 text-xs text-gray-700">{getIcon(validations.numbers)} <span>Números</span></div>
-                  <div className="flex items-center gap-2 text-xs text-gray-700">{getIcon(validations.match)} <span>As senhas conferem</span></div>
+                <div>
+                  <label htmlFor="input-name" className="block text-sm font-semibold text-gray-700 mb-2">Nome completo</label>
+                  <input
+                    type="text"
+                    id="input-username"
+                    name="username"
+                    placeholder="Ex: Maria Silva"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
+                  />
                 </div>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                <button
-                  type="submit"
-                  className="flex-1 bg-gradient-to-r from-[#0066cc] to-[#0052a3] hover:from-[#0052a3] hover:to-[#003d7a] text-white font-semibold py-3 rounded-lg transition-all duration-300 cursor-pointer active:brightness-90"
-                >
-                  Cadastre-se
-                </button>
-                <Link
-                  href="/login/aluno"
-                  className="flex-1 border-2 border-[#0066cc] text-[#0066cc] font-semibold py-3 rounded-lg hover:bg-blue-50 transition-all duration-300 text-center cursor-pointer active:brightness-90"
-                >
-                  Voltar
-                </Link>
-              </div>
-            </form>
+                <div>
+                  <label htmlFor="input-id-senac" className="block text-sm font-semibold text-gray-700 mb-2">ID do Senac <span className="text-xs cursor-help" title="Acesse sua área exclusiva Senac > Na aba 'Serviços ao Aluno' selecione 'Nota/menção, frequência e financeiro' > 'Notas/Menções e Atividades' > O ID do Senac aparecerá no topo na página">ℹ️</span></label>
+                  <input
+                    type="number"
+                    id="input-id-senac"
+                    name="id-senac"
+                    placeholder="Ex: 0123456789"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="input-name" className="block text-sm font-semibold text-gray-700 mb-2">Token do Grupo</label>
+                  <input
+                    type="text"
+                    id="input-group-token"
+                    name="group-token"
+                    placeholder="Ex: X0X0X0"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="input-email" className="block text-sm font-semibold text-gray-700 mb-2">E-mail institucional</label>
+                  <input
+                    type="email"
+                    id="input-email-inst"
+                    name="email-inst"
+                    placeholder="Ex: maria@senacsp.edu.br"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="input-personal-email" className="block text-sm font-semibold text-gray-700 mb-2"></label>
+                  <input
+                    required
+                    type="email"
+                    id="input-personal-email"
+                    name="personal-email"
+                    placeholder="Ex: maria@gmail.com"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="input-phone" className="block text-sm font-semibold text-gray-700 mb-2">Celular</label>
+                  <input
+                    required
+                    type="tel"
+                    id="input-phone"
+                    name="phone"
+                    placeholder="Ex: (11) 91234-5678"
+                    value={phone}
+                    onInput={(e) => {
+                      let value = e.currentTarget.value.replace(/\D/g, '');
+                      if (value.length > 11) value = value.slice(0, 11);
+                      if (value.length > 6) {
+                        value = value.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+                      } else if (value.length > 2) {
+                        value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+                      } else {
+                        value = value.replace(/^(\d{0,2})/, '($1');
+                      }
+                      setPhone(value);
+                    }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="input-course" className="block text-sm font-semibold text-gray-700 mb-2">Curso</label>
+                  <select
+                    id="input-course"
+                    name="course"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
+                    value={course}
+                    onChange={(e) => {
+                      setCourse(e.target.value);
+                      setSubject('');
+                    }}
+                  >
+                    <option value="">Selecione seu curso</option>
+                    <option value="comp">Engenharia da Computação</option>
+                    <option value="prod">Engenharia de Produção</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="input-semester" className="block text-sm font-semibold text-gray-700 mb-2">Semestre</label>
+                  <select
+                    id="input-semester"
+                    name="semester"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
+                    value={semester}
+                    onChange={(e) => {
+                      setSemester(e.target.value);
+                      setSubject('');
+                    }}
+                  >
+                    <option value="">Selecione seu semestre</option>
+                    {Array.from({ length: 5 }, (_, i) => {
+                      const value = i * 2 + 1
+                      return (
+                        <option key={value} value={value}>
+                          {`${value}º semestre`}
+                        </option>
+                      )
+                    })}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="input-subject" className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    Matéria para designar ponto
+                    <span className="text-xs cursor-help" title="Os pontos extras obtidos durante a Semana das Engenharias (palestras, gamificações, etc) serão alocados nesta matéria.">ℹ️</span>
+                  </label>
+                  <select
+                    required
+                    id="input-subject"
+                    name="subject"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all disabled:bg-gray-100 disabled:text-gray-500"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    disabled={!course || !semester || availableSubjects.length === 0}
+                  >
+                    <option value="">
+                      {(!course || !semester)
+                        ? "Selecione primeiro o curso e o semestre"
+                        : availableSubjects.length === 0
+                          ? "Nenhuma matéria disponível para esta combinação"
+                          : "Selecione a matéria"}
+                    </option>
+                    {availableSubjects.map((subj) => (
+                      <option key={subj} value={subj}>
+                        {subj}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="pt-2">
+                  <label htmlFor="input-password" className="block text-sm font-semibold text-gray-700 mb-2">Senha</label>
+                  <input
+                    type="password"
+                    id="input-password"
+                    name="password"
+                    placeholder="Ex: Senac@123"
+                    onInput={(e) => setPassword(e.currentTarget.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="input-confirm-password" className="block text-sm font-semibold text-gray-700 mb-2">Confirmar senha</label>
+                  <input
+                    type="password"
+                    id="input-confirm-password"
+                    name="confirm-password"
+                    placeholder="Repita a senha"
+                    onInput={(e) => setConfirmPassword(e.currentTarget.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066cc] focus:border-transparent transition-all"
+                  />
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="text-xs font-semibold text-gray-700 mb-3">Crie sua senha utilizando:</div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div className="flex items-center gap-2 text-xs text-gray-700">{getIcon(validations.characters)} <span>Caracteres especiais</span></div>
+                    <div className="flex items-center gap-2 text-xs text-gray-700">{getIcon(validations.lettersLow)} <span>Letras minúsculas</span></div>
+                    <div className="flex items-center gap-2 text-xs text-gray-700">{getIcon(validations.lettersCap)} <span>Letras maiúsculas</span></div>
+                    <div className="flex items-center gap-2 text-xs text-gray-700">{getIcon(validations.length)} <span>Mínimo 8 caracteres</span></div>
+                    <div className="flex items-center gap-2 text-xs text-gray-700">{getIcon(validations.numbers)} <span>Números</span></div>
+                    <div className="flex items-center gap-2 text-xs text-gray-700">{getIcon(validations.match)} <span>As senhas conferem</span></div>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-gradient-to-r from-[#0066cc] to-[#0052a3] hover:from-[#0052a3] hover:to-[#003d7a] text-white font-semibold py-3 rounded-lg transition-all duration-300 cursor-pointer active:brightness-90"
+                  >
+                    Cadastre-se
+                  </button>
+                  <Link
+                    href="/login/aluno"
+                    className="flex-1 border-2 border-[#0066cc] text-[#0066cc] font-semibold py-3 rounded-lg hover:bg-blue-50 transition-all duration-300 text-center cursor-pointer active:brightness-90"
+                  >
+                    Voltar
+                  </Link>
+                </div>
+              </form>
             </div>
           </div>
         </section>
