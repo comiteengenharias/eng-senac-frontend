@@ -177,9 +177,12 @@ export default function AreaRestrita() {
 
     } catch (error: any) {
       setLoading(false)
+      const message = error?.response?.status === 409 && error?.response?.data
+        ? error.response.data
+        : 'Estamos com problemas para processar seu cadastro. Por favor, entre em contato com o suporte.';
       Swal.fire({
         title: 'Oops!',
-        text: "Estamos com problemas para processar seu cadastro. Por favor, entre em contato com o suporte.",
+        text: message,
         icon: 'error',
         confirmButtonText: 'Ok',
         confirmButtonColor: '#003'
