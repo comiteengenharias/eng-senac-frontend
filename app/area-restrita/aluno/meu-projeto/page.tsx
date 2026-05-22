@@ -207,7 +207,7 @@ export default function AreaRestrita_Aluno() {
                     <div>
                       <p className="font-semibold">1. Banca – Peso de 70%</p>
                       <p>Quem avalia: professores em sala de aula.</p>
-                      <p>Mínimo de avaliadores: 2.</p>
+                      <p>Mínimo de avaliadores: 3.</p>
                     </div>
 
                     <div>
@@ -219,7 +219,7 @@ export default function AreaRestrita_Aluno() {
                     <div>
                       <p className="font-semibold">3. Outros alunos – Peso de 5%</p>
                       <p>Quem avalia: alunos visitantes da feira.</p>
-                      <p>Mínimo de avaliadores: 3.</p>
+                      <p>Mínimo de avaliadores: 5.</p>
                     </div>
 
                     <div>

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2'
-import { loginTeacher, recoverTeacherPassword, verifyLogin } from "@/services/api-login";
+import { loginTeacher, logout, recoverTeacherPassword, verifyLogin } from "@/services/api-login";
 import { useEffect, useState } from 'react';
 import LoadingOverlay from '@/components/system/loading-overlay';
 import { Lock, Mail, Eye, EyeOff, LogIn } from 'lucide-react';
@@ -25,7 +25,9 @@ export default function LoginProfessor() {
 				} else if (data.role === 'Support') {
 					router.push('/area-restrita/apoio');
 				} else {
-					router.push('/');
+					logout().then(() => {
+						router.push('/');
+					});
 				}
 			} else {
 				setLoading(false)

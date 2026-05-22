@@ -224,7 +224,7 @@ export default function AreaRestrita_Aluno() {
                             ? 'text-green-600' 
                             : 'text-red-600'
                         }`}>
-                          {getInfo?.extraNoteReason || 'Motivo não informado'}
+                          {'Motivo: ' + (getInfo?.extraNoteReason || 'Motivo não informado')}
                         </p>
                       </div>
                     </div>

@@ -3,7 +3,7 @@
 import Footer from "@/components/Home/Footer";
 import Header from "@/components/Home/Header";
 import LoadingOverlay from "@/components/system/loading-overlay";
-import { verifyLogin } from "@/services/api-login";
+import { logout, verifyLogin } from "@/services/api-login";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -12,7 +12,7 @@ import { LogIn, Users, BookOpen, Shield } from "lucide-react";
 export default function AreaRestrita() {
   const router = useRouter();
   const [loading, setLoading] = useState(true)
-  
+
   useEffect(() => {
     (async () => {
       const data = await verifyLogin();
@@ -24,7 +24,9 @@ export default function AreaRestrita() {
         } else if (data.role === 'Support') {
           router.push('/area-restrita/apoio');
         } else {
-          router.push('/');
+          logout().then(() => {
+            router.push('/');
+          });
         }
       } else {
         setLoading(false)
@@ -60,7 +62,7 @@ export default function AreaRestrita() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
       <LoadingOverlay active={loading} />
       <Header />
-      
+
       <main className="flex-1 flex items-center justify-center px-4 py-12 sm:py-16 mt-20">
         <div className="w-full max-w-5xl">
           {/* Header Section */}

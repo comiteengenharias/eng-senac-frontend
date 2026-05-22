@@ -22,8 +22,9 @@ export default function AreaRestrita_Aluno() {
     (async () => {
       const data = await verifyLogin();
       if (!data || data == null || data.role !== 'Student') {
-        logout();
-        router.push('/');
+        logout().then(() => {
+            router.push('/');
+        });
       }
     })();
   }, []);
@@ -66,8 +67,9 @@ export default function AreaRestrita_Aluno() {
       try {
         const data = await getSummaryInfo();
         if (!data || data?.message?.toLowerCase().includes('not found') || data?.message?.toLowerCase().includes('não encontrado')) {
-          logout();
-          router.push('/');
+          logout().then(() => {
+            router.push('/');
+          });
           return;
         }
         setSummaryInfo(data);
@@ -78,8 +80,9 @@ export default function AreaRestrita_Aluno() {
         const status = error?.response?.status;
         const message: string = error?.response?.data?.message ?? '';
         if (status === 404 || message.toLowerCase().includes('not found') || message.toLowerCase().includes('não encontrado')) {
-          logout();
-          router.push('/');
+          logout().then(() => {
+            router.push('/');
+          });
           return;
         }
       } finally {
@@ -144,7 +147,7 @@ export default function AreaRestrita_Aluno() {
         <div className="max-w-7xl mx-auto p-6 space-y-4 flex flex-col">
           <Card className="shadow-md border-0 bg-blue-50 border-l-4 border-[var(--blue)]">
             <CardContent className="pt-0">
-              <p className="mb-4 font-semibold text-gray-800">📌 Requisitos para Ponto Bônus</p>
+              <p className="mb-4 font-semibold text-gray-800">📌 Requisitos para ponto bônus (0,5)</p>
               <ul className="space-y-2 text-gray-700 text-sm">
                 <li className="flex items-start gap-2">
                   <span className="text-[var(--blue)] font-bold">✓</span>
