@@ -30,6 +30,7 @@ export default function AreaRestrita_Aluno() {
         intervals: Interval[];
         lecture: Lecture;
         lectureSpeaker: LectureSpeaker;
+        Checked: boolean;
     }
 
     interface Interval {
@@ -165,12 +166,16 @@ export default function AreaRestrita_Aluno() {
                                         <div className="border-b mb-3"><a href={lecture.lectureSpeaker.linkedin} target="_blank">{lecture.lectureSpeaker.fullname}</a></div>
                                         <div className="opacity-70 mb-4">{lecture.lecture.description}</div>
                                         <div>
-                                            <div className="text-sm font-medium mb-1">Presença: {lecture.attendancePercentage}%</div>
+                                            <div className="text-sm font-medium mb-1">
+                                                Presença: {lecture.Checked ? `${lecture.attendancePercentage}%` : 'Calculando'}
+                                            </div>
                                             <Progress
-                                                value={lecture.attendancePercentage}
-                                                indicatorColor={getProgressColor(lecture.attendancePercentage)}
+                                                value={lecture.Checked ? lecture.attendancePercentage : 0}
+                                                indicatorColor={lecture.Checked ? getProgressColor(lecture.attendancePercentage) : undefined}
                                             />
-
+                                            {!lecture.Checked && (
+                                                <p className="text-xs text-gray-400 mt-1">Aguardando divulgação da frequência</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
