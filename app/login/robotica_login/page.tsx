@@ -6,7 +6,7 @@
 // - Swal para exibir alertas customizados
 // - Ícones do Lucide React para a interface visual
 // - Yup para validação de formulários
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Swal from 'sweetalert2';
 import * as yup from 'yup';
@@ -17,7 +17,9 @@ import {
   Eye, 
   EyeOff, 
   ArrowRight, 
+  ArrowLeft,
   AlertCircle, 
+  CheckCircle2,
   PlusCircle, 
   User, 
   Scale, 
@@ -29,8 +31,8 @@ import GarrinhaIcon from '../../../components/GarrinhaIcon';
 // Define os tipos de perfil de usuário no sistema (Admin, Juiz, Técnico)
 type UserProfile = 'ADMIN' | 'JUIZ' | 'TECNICO';
 
-// Define as diferentes telas que o componente pode exibir (Login, Registro, Recuperar Senha)
-type CurrentScreen = 'LOGIN' | 'REGISTER' | 'RECUPERAR_SENHA';
+// Define as diferentes telas que o componente pode exibir (Login, Registro, Recuperação de senha)
+type CurrentScreen = 'LOGIN' | 'REGISTER' | 'FORGOT_EMAIL' | 'FORGOT_CODE' | 'FORGOT_RESET';
 
 // Schemas de validação com Yup
 const loginSchema = yup.object().shape({
@@ -38,7 +40,18 @@ const loginSchema = yup.object().shape({
   password: yup.string().required('Senha obrigatória'),
 });
 
-// ...outros schemas não relacionados a recuperação de senha...
+const recoveryEmailSchema = yup.object().shape({
+  email: yup.string().email('E-mail inválido').required('E-mail obrigatório'),
+});
+
+const recoveryCodeSchema = yup.object().shape({
+  code: yup.string().length(6, 'Código deve ter 6 dígitos').required('Código obrigatório'),
+});
+
+const resetPasswordSchema = yup.object().shape({
+  newPassword: yup.string().min(8, 'Mínimo 8 caracteres').required('Nova senha obrigatória'),
+  confirmPassword: yup.string().oneOf([yup.ref('newPassword')], 'As senhas não coincidem').required('Confirmação obrigatória'),
+});
 
 const registerSchema = yup.object().shape({
   fullName: yup.string().required('Nome obrigatório'),
@@ -91,6 +104,14 @@ export default function PortalRobotica() {
   // Armazena mensagens de erro do login para exibir ao usuário
   const [loginError, setLoginError] = useState('');
 
+  // ========== ESTADOS DA RECUPERAÇÃO DE SENHA ==========
+  const [recoveryEmail, setRecoveryEmail] = useState('');
+  const [recoveryCode, setRecoveryCode] = useState(['', '', '', '', '', '']);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [timer, setTimer] = useState(165);
+  const codeInputsRef = useRef<(HTMLInputElement | null)[]>([]);
+
   // ...outros estados não relacionados a recuperação de senha...
 
   // ========== ESTADOS DO CADASTRO ==========
@@ -124,6 +145,156 @@ export default function PortalRobotica() {
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
+
+  const parseApiError = async (response: Response) => {
+    const text = await response.text().catch(() => '');
+    if (!text) return `Erro ${response.status}`;
+
+    try {
+      const json = JSON.parse(text);
+      return json?.message || json?.detail || text;
+    } catch {
+      return text;
+    }
+  };
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (screen === 'FORGOT_CODE' && timer > 0) {
+      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [screen, timer]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleSendRecoveryEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      recoveryEmailSchema.validateSync({ email: recoveryEmail });
+      setLoading(true);
+
+      const response = await fetch(`${apiBaseUrl}/api/robotica/recover`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email: recoveryEmail }),
+      });
+
+      setLoading(false);
+
+      if (!response.ok) {
+        const message = await parseApiError(response);
+        throw new Error(message || 'Falha ao enviar e-mail de recuperação.');
+      }
+
+      setTimer(165);
+      setRecoveryCode(['', '', '', '', '', '']);
+      setScreen('FORGOT_CODE');
+      Swal.fire({ icon: 'success', title: 'Verifique seu e-mail', text: 'Enviamos o código de recuperação.', confirmButtonColor: '#004B93' });
+    } catch (error: any) {
+      setLoading(false);
+      Swal.fire({ icon: 'error', title: 'Erro', text: error.message || 'Erro ao enviar e-mail de recuperação.', confirmButtonColor: '#004B93' });
+    }
+  };
+
+  const handleCodeChange = (index: number, value: string) => {
+    if (value.length > 1) value = value.slice(-1);
+    const newCode = [...recoveryCode];
+    newCode[index] = value;
+    setRecoveryCode(newCode);
+
+    if (value && index < 5) {
+      codeInputsRef.current[index + 1]?.focus();
+    }
+  };
+
+  const handleCodeKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !recoveryCode[index] && index > 0) {
+      codeInputsRef.current[index - 1]?.focus();
+    }
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const fullCode = recoveryCode.join('');
+
+    try {
+      recoveryCodeSchema.validateSync({ code: fullCode });
+      setLoading(true);
+
+      const response = await fetch(`${apiBaseUrl}/api/robotica/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email: recoveryEmail, code: fullCode }),
+      });
+
+      setLoading(false);
+
+      if (!response.ok) {
+        const message = await parseApiError(response);
+        throw new Error(message || 'Código inválido ou expirado.');
+      }
+
+      setScreen('FORGOT_RESET');
+      Swal.fire({ icon: 'success', title: 'Código verificado', text: 'Agora você pode criar uma nova senha.', confirmButtonColor: '#004B93' });
+    } catch (error: any) {
+      setLoading(false);
+      Swal.fire({ icon: 'error', title: 'Falha na verificação', text: error.message || 'Erro ao verificar o código.', confirmButtonColor: '#004B93' });
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      resetPasswordSchema.validateSync({ newPassword, confirmPassword: confirmNewPassword });
+      setLoading(true);
+
+      const response = await fetch(`${apiBaseUrl}/api/robotica/password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ currentPassword: recoveryCode.join(''), newPassword }),
+      });
+
+      setLoading(false);
+
+      if (!response.ok) {
+        const message = await parseApiError(response);
+        throw new Error(message || 'Falha ao redefinir senha.');
+      }
+
+      Swal.fire({
+        title: 'Senha redefinida!',
+        text: 'Sua senha foi alterada com sucesso.',
+        icon: 'success',
+        confirmButtonColor: '#004B93'
+      }).then(() => {
+        setScreen('LOGIN');
+        setNewPassword('');
+        setConfirmNewPassword('');
+        setRecoveryEmail('');
+        setRecoveryCode(['', '', '', '', '', '']);
+      });
+    } catch (error: any) {
+      setLoading(false);
+      Swal.fire({ icon: 'error', title: 'Erro', text: error.message || 'Erro ao redefinir senha.', confirmButtonColor: '#004B93' });
+    }
+  };
+
   // Função chamada ao enviar o formulário de login
   // Valida email e senha usando Yup e envia para a API de robótica
   const handleLogin = async (e: React.FormEvent) => {
@@ -196,12 +367,18 @@ export default function PortalRobotica() {
       registerSchema.validateSync(data);
       setLoading(true);
 
+      const sanitizedCpf = regCpf.replace(/\D/g, '');
       const body: any = {
         email: regEmail,
         password: regPassword,
+        confirmPassword: regConfirmPassword,
         name: regFullName,
-        cpf: regCpf,
+        cpf: sanitizedCpf,
         typeUser: selectedProfile,
+        profile: selectedProfile,
+        authCode: regAuthCode || undefined,
+        adminToken: regAuthCode || undefined,
+        institution: selectedProfile === 'TECNICO' ? regInstitution : undefined,
       };
 
       const response = await fetch(`${apiBaseUrl}/api/robotica/register`, {
@@ -269,7 +446,7 @@ export default function PortalRobotica() {
 
       {/* ========== SIDEBAR ESQUERDA (OCULTA EM MOBILE) ========== */}
       {/* Exibe apenas em telas grandes (lg). Tem background azul escuro com gradient */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#004B93] relative overflow-hidden flex-col justify-between p-12">
+      <div className="hidden md:flex md:w-1/2 bg-[#004B93] relative overflow-hidden flex-col justify-between p-12">
         
         {/* Imagem de background com overlay */}
         <div className="absolute inset-0 z-0 bg-cover bg-center opacity-60"
@@ -315,35 +492,179 @@ export default function PortalRobotica() {
 
       {/* ========== ÁREA DINÂMICA DIREITA ========== */}
       {/* Ocupa 100% em mobile e 50% em telas grandes */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 overflow-y-auto">
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-12 overflow-y-auto">
         <div className="w-full max-w-md font-body">
-          {/* ========== ÁREA DE RECUPERAR SENHA (VISUAL) ========== */}
-          {screen === 'RECUPERAR_SENHA' && (
+          {/* ========== TELA 2: RECUPERAÇÃO - ETAPA 1 (E-MAIL) ========== */}
+          {screen === 'FORGOT_EMAIL' && (
             <div className="animate-fadeIn transition-all duration-300">
               <button 
                 onClick={() => setScreen('LOGIN')} 
                 className="flex items-center gap-1 text-xs font-bold text-[#004B93] hover:underline mb-4"
               >
-                Voltar para o Login
+                <ArrowLeft className="w-3.5 h-3.5" /> Voltar para o Login
               </button>
-              <h3 className="text-2xl font-headline font-bold text-[#34495E] mb-1">Recuperar Senha</h3>
-              <p className="text-sm text-[#34495E]/70 font-body mb-6">Insira seu e-mail cadastrado para receber as instruções de redefinição.</p>
-              <form className="space-y-4">
+
+              <h3 className="text-3xl font-headline font-bold text-[#34495E] mb-2">Recuperar Senha</h3>
+              <p className="text-sm text-[#34495E]/70 font-body mb-6 leading-relaxed">
+                Insira seu e-mail cadastrado para receber as instruções de redefinição.
+              </p>
+
+              <form onSubmit={handleSendRecoveryEmail} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1">E-mail</label>
-                  <input
-                    type="email"
-                    placeholder="exemplo@hotel.com.br"
-                    className="w-full px-3 py-2.5 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none transition-all focus:border-[#004B93]"
-                  />
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1.5">E-mail</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400" />
+                    <input
+                      type="email"
+                      required
+                      value={recoveryEmail}
+                      onChange={(e) => setRecoveryEmail(e.target.value)}
+                      placeholder="nome.sobrenome@senacsp.edu.br"
+                      className="w-full pl-10 pr-4 py-3 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none focus:border-[#004B93] focus:ring-2 focus:ring-[#004B93]/10 transition-all"
+                    />
+                  </div>
                 </div>
+
                 <button
-                  type="button"
-                  className="w-full bg-[#004B93] hover:bg-[#003970] text-white font-headline font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md mt-6"
-                  disabled
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-[#004B93] hover:bg-[#003970] text-white font-headline font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md"
                 >
-                  ENVIAR INSTRUÇÕES
-                  <ArrowRight className="w-4 h-4" />
+                  {loading ? <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'ENVIAR INSTRUÇÕES ⊳'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* ========== TELA 3: RECUPERAÇÃO - ETAPA 2 (CÓDIGO) ========== */}
+          {screen === 'FORGOT_CODE' && (
+            <div className="animate-fadeIn transition-all duration-300">
+              <button 
+                onClick={() => setScreen('FORGOT_EMAIL')} 
+                className="flex items-center gap-1 text-xs font-bold text-[#004B93] hover:underline mb-4"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" /> Voltar para etapa anterior
+              </button>
+
+              <h3 className="text-3xl font-headline font-bold text-[#34495E] mb-2">Verificar Código</h3>
+              <p className="text-sm text-[#34495E]/70 font-body mb-6">
+                Enviamos um código de 6 dígitos para seu e-mail.<br />Por favor, insira-o abaixo para continuar.
+              </p>
+
+              <form onSubmit={handleVerifyCode} className="space-y-6">
+                <div className="flex justify-between gap-2">
+                  {recoveryCode.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      ref={(el) => { codeInputsRef.current[idx] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleCodeChange(idx, e.target.value)}
+                      onKeyDown={(e) => handleCodeKeyDown(idx, e)}
+                      className="w-12 h-12 bg-[#F4F7FA] border border-gray-200 rounded-lg text-center text-lg font-headline font-bold text-[#004B93] focus:outline-none focus:border-[#004B93] focus:ring-2 focus:ring-[#004B93]/20 transition-all"
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-[#004B93] hover:bg-[#003970] text-white font-headline font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md"
+                >
+                  {loading ? <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Verificar ➔'}
+                </button>
+
+                <div className="text-center space-y-2">
+                  <p className="text-xs text-[#34495E]/80">
+                    Não recebeu o código?{' '}
+                    <button 
+                      type="button" 
+                      onClick={() => { setTimer(165); Swal.fire({ icon:'success', title:'Reenviado', text:'Verifique sua caixa de entrada.', showConfirmButton:false, timer:1500 }); }} 
+                      className="text-[#004B93] font-bold hover:underline"
+                    >
+                      Reenviar código
+                    </button>
+                  </p>
+                  <p className="text-xs font-headline tracking-widest font-bold text-gray-400 uppercase flex items-center justify-center gap-1">
+                    ⏱ Expira em {formatTime(timer)}
+                  </p>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* ========== TELA 4: RECUPERAÇÃO - ETAPA 3 (NOVA SENHA) ========== */}
+          {screen === 'FORGOT_RESET' && (
+            <div className="animate-fadeIn transition-all duration-300">
+              <button 
+                onClick={() => setScreen('FORGOT_CODE')} 
+                className="flex items-center gap-1 text-xs font-bold text-[#004B93] hover:underline mb-4"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" /> Voltar para etapa anterior
+              </button>
+
+              <h3 className="text-3xl font-headline font-bold text-[#34495E] mb-2">Nova senha</h3>
+              <p className="text-sm text-[#34495E]/70 font-body mb-6">Crie uma senha forte para proteger sua conta.</p>
+
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1.5">Nova Senha</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full pl-4 pr-10 py-3 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none focus:border-[#004B93] focus:ring-2 focus:ring-[#004B93]/10 transition-all"
+                    />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600">
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#34495E] mb-1.5">Confirmar Nova Senha</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      required
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full pl-4 pr-10 py-3 bg-[#F4F7FA] border border-transparent rounded-lg text-sm focus:outline-none focus:border-[#004B93] focus:ring-2 focus:ring-[#004B93]/10 transition-all"
+                    />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600">
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-[#F0F5FA] p-4 rounded-lg space-y-2 border border-blue-100/50">
+                  <p className="text-xs font-headline font-bold uppercase tracking-wider text-[#34495E]/80 mb-2">Requisitos de segurança</p>
+                  <div className="flex items-center gap-2 text-xs text-[#34495E]">
+                    <CheckCircle2 className={`w-4 h-4 ${newPassword.length >= 8 ? 'text-green-600' : 'text-gray-300'}`} />
+                    <span>Pelo menos 8 caracteres</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-[#34495E]">
+                    <CheckCircle2 className={`w-4 h-4 ${/\d/.test(newPassword) ? 'text-green-600' : 'text-gray-300'}`} />
+                    <span>Pelo menos 1 número</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-[#34495E]">
+                    <CheckCircle2 className={`w-4 h-4 ${/[!@#$%^&*(),.?":{}|<>]/.test(newPassword) ? 'text-green-600' : 'text-gray-300'}`} />
+                    <span>Pelo menos 1 caractere especial</span>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-[#004B93] hover:bg-[#003970] text-white font-headline font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md mt-4"
+                >
+                  {loading ? <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'REDEFINIR SENHA'}
                 </button>
               </form>
             </div>
@@ -421,7 +742,7 @@ export default function PortalRobotica() {
                       type="button"
                       className="text-xs font-semibold text-[#004B93] focus:outline-none ml-2"
                       style={{ textDecoration: 'none', fontWeight: 600, padding: 0, background: 'none' }}
-                      onClick={() => setScreen('RECUPERAR_SENHA')}
+                      onClick={() => setScreen('FORGOT_EMAIL')}
                     >
                       Esqueceu a senha?
                     </button>

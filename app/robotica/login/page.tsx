@@ -224,23 +224,50 @@ export default function PortalRobotica() {
     }
   };
 
+  const parseApiError = async (response: Response) => {
+    const text = await response.text().catch(() => '');
+    if (!text) return `Erro ${response.status}`;
+
+    try {
+      const json = JSON.parse(text);
+      return json?.message || json?.detail || text;
+    } catch {
+      return text;
+    }
+  };
+
   // ========== HANDLER: ENVIAR EMAIL DE RECUPERAÇÃO ==========
-  // Função para enviar instruções de redefinição de senha para o email
-  const handleSendRecoveryEmail = (e: React.FormEvent) => {
+  // Envia o e-mail para iniciar o fluxo de recuperação de senha.
+  const handleSendRecoveryEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       recoveryEmailSchema.validateSync({ email: recoveryEmail });
-      
-      // Simula envio do email e avança para tela de código
       setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        setTimer(165); // Reseta o contador para 2 minutos e 45 segundos
-        setScreen('FORGOT_CODE'); // Muda para a tela de verificação do código
-      }, 1000);
+
+      const response = await fetch(`${apiBaseUrl}/api/robotica/recover`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email: recoveryEmail }),
+      });
+
+      setLoading(false);
+
+      if (!response.ok) {
+        const message = await parseApiError(response);
+        throw new Error(message || 'Falha ao enviar e-mail de recuperação.');
+      }
+
+      setTimer(165); // Reseta o contador para 2 minutos e 45 segundos
+      setRecoveryCode(['', '', '', '', '', '']);
+      setScreen('FORGOT_CODE');
+      Swal.fire({ icon: 'success', title: 'Verifique seu e-mail', text: 'Enviamos o código de recuperação.', confirmButtonColor: '#004B93' });
     } catch (error: any) {
-      Swal.fire({ icon: 'error', title: 'Erro', text: error.message, confirmButtonColor: '#004B93' });
+      setLoading(false);
+      Swal.fire({ icon: 'error', title: 'Erro', text: error.message || 'Erro ao enviar e-mail de recuperação.', confirmButtonColor: '#004B93' });
     }
   };
 
@@ -272,23 +299,36 @@ export default function PortalRobotica() {
   };
 
   // ========== HANDLER: VERIFICAR CÓDIGO ==========
-  // Valida se os 6 dígitos foram preenchidos e avança para redefinição de senha
-  const handleVerifyCode = (e: React.FormEvent) => {
+  // Valida se os 6 dígitos foram preenchidos, chama a API de verificação e avança para redefinição de senha
+  const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const fullCode = recoveryCode.join('');
-    
+
     try {
       recoveryCodeSchema.validateSync({ code: fullCode });
-      
-      // Simula validação do código no servidor
       setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        setScreen('FORGOT_RESET'); // Avança para tela de nova senha
-      }, 1000);
+
+      const response = await fetch(`${apiBaseUrl}/api/robotica/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email: recoveryEmail, code: fullCode }),
+      });
+
+      setLoading(false);
+
+      if (!response.ok) {
+        const message = await parseApiError(response);
+        throw new Error(message || 'Código inválido ou expirado.');
+      }
+
+      setScreen('FORGOT_RESET');
+      Swal.fire({ icon: 'success', title: 'Código verificado', text: 'Agora você pode criar uma nova senha.', confirmButtonColor: '#004B93' });
     } catch (error: any) {
-      Swal.fire({ icon: 'warning', title: 'Código Incompleto', text: error.message, confirmButtonColor: '#004B93' });
+      setLoading(false);
+      Swal.fire({ icon: 'error', title: 'Falha na verificação', text: error.message || 'Erro ao verificar o código.', confirmButtonColor: '#004B93' });
     }
   };
 
@@ -305,31 +345,44 @@ export default function PortalRobotica() {
 
   // ========== HANDLER: REDEFINIR SENHA ==========
   // Processa a redefinição de senha após verificação do código
-  const handleResetPassword = (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
-      resetPasswordSchema.validateSync({ newPassword, confirmNewPassword });
-      
-      // Simula envio da nova senha para o servidor
+      resetPasswordSchema.validateSync({ newPassword, confirmPassword: confirmNewPassword });
       setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        // Exibe alerta de sucesso
-        Swal.fire({
-          title: 'Senha redefinida!',
-          text: 'Sua senha foi alterada com sucesso.',
-          icon: 'success',
-          confirmButtonColor: '#004B93'
-        }).then(() => {
-          // Após confirmar, volta para login e limpa os campos
-          setScreen('LOGIN');
-          setNewPassword('');
-          setConfirmNewPassword('');
-        });
-      }, 1500);
+
+      const response = await fetch(`${apiBaseUrl}/api/robotica/password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ currentPassword: recoveryCode.join(''), newPassword }),
+      });
+
+      setLoading(false);
+
+      if (!response.ok) {
+        const message = await parseApiError(response);
+        throw new Error(message || 'Falha ao redefinir senha.');
+      }
+
+      Swal.fire({
+        title: 'Senha redefinida!',
+        text: 'Sua senha foi alterada com sucesso.',
+        icon: 'success',
+        confirmButtonColor: '#004B93'
+      }).then(() => {
+        setScreen('LOGIN');
+        setNewPassword('');
+        setConfirmNewPassword('');
+        setRecoveryEmail('');
+        setRecoveryCode(['', '', '', '', '', '']);
+      });
     } catch (error: any) {
-      Swal.fire({ icon: 'error', title: 'Erro', text: error.message, confirmButtonColor: '#004B93' });
+      setLoading(false);
+      Swal.fire({ icon: 'error', title: 'Erro', text: error.message || 'Erro ao redefinir senha.', confirmButtonColor: '#004B93' });
     }
   };
 
