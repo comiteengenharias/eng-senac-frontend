@@ -1,5 +1,83 @@
 'use client';
 
+const SUBJECTS_BY_COURSE: Record<string, Record<number, string[]>> = {
+  comp: {
+    1: [
+      "Contabilidade de Custos e Sustentabilidade",
+      "Design de Software I",
+      "Design para Manufatura",
+      "Eletroeletrônica",
+    ],
+    3: [
+      "Cálculo Numérico Aplicado",
+      "Circuitos Digitais I",
+      "Física Aplicada - práticas de extensão",
+      "Logística e Gestão da Cadeia de Suprimentos",
+      "Tecnologia de Processos Industriais e de Serviços",
+    ],
+    5: [
+      "Banco de Dados",
+      "Estruturação de Dados",
+      "Fenômenos de Transporte",
+      "Oscilações e Ondas",
+    ],
+    7: [
+      "Design de Aplicativos",
+      "Eletrônica e Laboratório de Eletrônica",
+      "Engenharia de Software I",
+      "Ondas e Eletromagnetismo",
+      "Sistemas Operacionais",
+      "Sistemas, Sinais e Engenharia de Controle",
+    ],
+    9: [
+      "Energia",
+      "Inteligência Artificial e Aprendizado de Máquinas",
+      "Laboratório de Redes",
+      "Linguagens Formais e Compiladores",
+      "Programação Mobile Avançado",
+    ],
+  },
+  prod: {
+    1: [
+      "Contabilidade de Custos e Sustentabilidade",
+      "Design de Software I",
+      "Design para Manufatura",
+      "Eletroeletrônica",
+    ],
+    3: [
+      "Cálculo Numérico Aplicado",
+      "Física Aplicada - práticas de extensão",
+      "Gerenciamento de Conflitos",
+      "Logística e Gestão da Cadeia de Suprimentos",
+      "Tecnologia de Processos Industriais e de Serviços",
+    ],
+    5: [
+      "Banco de Dados",
+      "Fenômenos de Transporte",
+      "Oscilações e Ondas",
+      "Pesquisa Operacional I: modelos determinísticos",
+    ],
+    7: [
+      "Engenharia Econômica",
+      "Gestão da Inovação",
+      "Gestão da Qualidade, Produtividade e Sustentabilidade",
+      "Gestão de Processos de Negócios",
+      "Gestão de Riscos",
+      "Projeto de Produtos e Serviços",
+      "Simulação de Sistemas de Produção",
+    ],
+    9: [
+      "Energia",
+      "Engenharia de Serviço Aplicado à Saúde",
+      "Inteligência Artificial e Aprendizado de Máquinas",
+      "Internet das Coisas em Serviços",
+      "Simulação de Robótica e Automação em Serviços",
+    ],
+  },
+};
+
+const POINT_MATERIAL_DEADLINE = new Date('2026-06-13T23:59:00-03:00');
+
 import Sidebar from "@/components/system/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +87,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { verifyLogin } from "@/services/api-login";
-import { getStudentInfo, postChangePassword } from "@/services/api-student";
+import { getStudentInfo, postChangePassword, patchPointMaterial } from "@/services/api-student";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LoadingOverlay from "@/components/system/loading-overlay";
 
 export default function AreaRestrita_Aluno() {
@@ -146,6 +225,8 @@ export default function AreaRestrita_Aluno() {
 
     const [getInfo, setGetInfo] = useState<StudentInfo | null>(null);
     const [course, setCourse] = useState<string | null>(null);
+    const [selectedMaterial, setSelectedMaterial] = useState<string>('');
+    const canChangePointMaterial = new Date() <= POINT_MATERIAL_DEADLINE;
 
     useEffect(() => {
         (async () => {
@@ -159,6 +240,7 @@ export default function AreaRestrita_Aluno() {
                     extraNoteReason: response.extraNoteReason
                 };
                 setGetInfo(fullData);
+                setSelectedMaterial(studentData.PointMaterial ?? studentData.pointMaterial ?? '');
 
                 const courseValue = studentData.Course ?? studentData.course;
                 const courseName =
@@ -173,6 +255,48 @@ export default function AreaRestrita_Aluno() {
             }
         })();
     }, []);
+
+    const courseKey = getInfo?.Course ?? getInfo?.course ?? '';
+    const semesterKey = getInfo?.Semester ?? getInfo?.semester ?? 0;
+    const subjectOptions = SUBJECTS_BY_COURSE[courseKey]?.[semesterKey] ?? [];
+
+    const handleChangePointMaterial = async () => {
+        if (!selectedMaterial) {
+            Swal.fire({
+                title: 'Selecione uma matéria',
+                text: 'Por favor, selecione uma matéria para ponto extra.',
+                icon: 'warning',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#003'
+            });
+            return;
+        }
+
+        try {
+            await patchPointMaterial(selectedMaterial);
+            setGetInfo((prev) => prev ? { ...prev, PointMaterial: selectedMaterial, pointMaterial: selectedMaterial } : prev);
+            Swal.fire({
+                title: 'Sucesso!',
+                text: 'Matéria para ponto extra alterada com sucesso.',
+                icon: 'success',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#003'
+            });
+        } catch (error: any) {
+            const errorMessage =
+                error.response?.data?.message ||
+                error.response?.data ||
+                error.message ||
+                'Ocorreu um erro desconhecido.';
+            Swal.fire({
+                title: 'Erro',
+                text: errorMessage,
+                icon: 'error',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#003'
+            });
+        }
+    };
 
     const info = [
         { name: "ID senac", id: "idSenac", value: getInfo?.IdSenac ?? getInfo?.idSenac ?? "Carregando..." },
@@ -246,6 +370,50 @@ export default function AreaRestrita_Aluno() {
                             </form>
                         </CardContent>
                     </Card>
+
+                    {canChangePointMaterial && (
+                        <Card className="shadow-md border-0">
+                            <CardHeader className="border-b-2 border-gray-200">
+                                <CardTitle className="text-lg text-gray-800 select-none font-semibold">
+                                    📚 Alterar Matéria para Ponto Extra
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-4 py-3 mb-6">
+                                    ⚠️ A alteração da matéria para ponto extra pode ser feita até <strong>13/06/2026 às 23h59</strong>. Após essa data, não será mais possível alterar.
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6 mb-6">
+                                    <div>
+                                        <Label className="mb-2 opacity-70">Matéria para ponto extra</Label>
+                                        {subjectOptions.length > 0 ? (
+                                            <Select value={selectedMaterial} onValueChange={setSelectedMaterial}>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Selecione uma matéria" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {subjectOptions.map((subject) => (
+                                                        <SelectItem key={subject} value={subject}>{subject}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        ) : (
+                                            <p className="text-sm text-gray-500 mt-1">Nenhuma opção disponível para seu curso/semestre.</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="flex justify-end">
+                                    <Button
+                                        type="button"
+                                        className="bg-[var(--blue)] hover:bg-[var(--blue)] cursor-pointer transition-all duration-200 active:brightness-90"
+                                        onClick={handleChangePointMaterial}
+                                        disabled={subjectOptions.length === 0}
+                                    >
+                                        Salvar matéria
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
 
                     <Card className="shadow-md border-0">
                         <CardHeader className="border-b-2 border-gray-200">
