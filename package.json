@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "cross-env NEXT_ANALYTICS_DISABLED=1 next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "cross-env NEXT_ANALYTICS_DISABLED=1 next dev -p 3000",
+    "start:static": "npx --yes serve out -l 3000",
+    "start:fresh": "npm run build && npm run start:static",
     "lint": "next lint"
   },
   "dependencies": {
