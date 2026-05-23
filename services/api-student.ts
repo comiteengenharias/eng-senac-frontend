@@ -159,6 +159,19 @@ export async function postEvaluateOtherProjects(data: ProjectAssessmentForm) {
     }
 }
 
+export async function patchPointMaterial(pointMaterial: string) {
+    try {
+        const response = await apiClient.patch('/api/student/point-material', { pointMaterial }, {
+            withCredentials: true,
+        });
+
+        return response.data;
+
+    } catch (error: any) {
+        throw error;
+    }
+}
+
 export async function deliverProjectFiles(files: {
     report: File;
     presentation: File;

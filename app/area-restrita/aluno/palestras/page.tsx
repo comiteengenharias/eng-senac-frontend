@@ -164,7 +164,6 @@ export default function AreaRestrita_Aluno() {
                                     <div className="w-full">
                                         <div className="text-lg font-bold">{lecture.lecture.title}</div>
                                         <div className="border-b mb-3"><a href={lecture.lectureSpeaker.linkedin} target="_blank">{lecture.lectureSpeaker.fullname}</a></div>
-                                        <div className="opacity-70 mb-4">{lecture.lecture.description}</div>
                                         <div>
                                             {lecture.Checked && (
                                                 <div className="text-sm font-medium mb-1">
