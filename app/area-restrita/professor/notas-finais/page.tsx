@@ -345,7 +345,7 @@ export default function AreaRestrita_Professor() {
                             Média PI
                           </TableHead>
                           <TableHead className="px-4 py-3 text-center text-gray-700 font-semibold text-xs uppercase tracking-wider">
-                            Ponto 12ºSdE
+                            Ponto 13ºSdE
                           </TableHead>
                           <TableHead className="px-4 py-3 text-left text-gray-700 font-semibold text-xs uppercase tracking-wider">
                             Disciplina
