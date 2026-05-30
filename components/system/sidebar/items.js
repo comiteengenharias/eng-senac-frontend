@@ -70,14 +70,14 @@ export const tooltipTeacherItems = [
     link: '/area-restrita/professor/ranking',
     id: 'ranking',
     target: '_blank'
-  },
+  }/*,
   {
     label: 'Torneio Robótica',
     icon: Cpu,
     link: 'https://forms.office.com/Pages/ResponsePage.aspx?id=HjuebwkYSkSB04LUCpKIEjKwfikByxNGkZWOSGd9GZJUM0hHQzM5TTdQOERJRDBSWFlYRTNUQVkyRi4u',
     id: 'torneio-robotica',
     target: '_blank'
-  }
+  }*/
 ];
 
 export const tooltipSupportItems = [
