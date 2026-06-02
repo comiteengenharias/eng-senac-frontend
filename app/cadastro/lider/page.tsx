@@ -231,12 +231,12 @@ export default function AreaRestrita() {
   const sendData = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const deadline = new Date(2026, 4, 30, 23, 59, 59); // 30/05/2026
+    const deadline = new Date(2026, 5, 5, 23, 59, 59); // 30/05/2026
     if (new Date() > deadline) {
       Swal.fire({
         icon: 'error',
         title: 'Prazo encerrado',
-        text: 'O prazo para inscrições encerrou no dia 30/05/2026.',
+        text: 'O prazo para inscrições encerrou no dia 05/06/2026.',
         confirmButtonColor: '#e11d48',
       });
       return;
