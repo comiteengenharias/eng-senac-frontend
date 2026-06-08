@@ -90,9 +90,8 @@ export async function logout(): Promise<any> {
 
 export async function recoverStudentPassword(institutionalEmail: string): Promise<any> {
     try {
-        const response = await apiClient.post('/api/recover-password/student', institutionalEmail, {
+        const response = await apiClient.post('/api/recover-password/student', { institutionalEmail }, {
             withCredentials: true,
-            headers: { 'Content-Type': 'text/plain' },
         });
 
         return response.data;
@@ -104,9 +103,8 @@ export async function recoverStudentPassword(institutionalEmail: string): Promis
 
 export async function recoverTeacherPassword(institutionalEmail: string): Promise<any> {
     try {
-        const response = await apiClient.post('/api/recover-password/teacher', institutionalEmail, {
+        const response = await apiClient.post('/api/recover-password/teacher', { institutionalEmail }, {
             withCredentials: true,
-            headers: { 'Content-Type': 'text/plain' },
         });
 
         return response.data;
