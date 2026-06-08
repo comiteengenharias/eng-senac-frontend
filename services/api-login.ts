@@ -92,6 +92,7 @@ export async function recoverStudentPassword(institutionalEmail: string): Promis
     try {
         const response = await apiClient.post('/api/recover-password/student', institutionalEmail, {
             withCredentials: true,
+            headers: { 'Content-Type': 'text/plain' },
         });
 
         return response.data;
@@ -105,6 +106,7 @@ export async function recoverTeacherPassword(institutionalEmail: string): Promis
     try {
         const response = await apiClient.post('/api/recover-password/teacher', institutionalEmail, {
             withCredentials: true,
+            headers: { 'Content-Type': 'text/plain' },
         });
 
         return response.data;
