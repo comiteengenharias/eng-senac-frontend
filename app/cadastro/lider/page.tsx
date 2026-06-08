@@ -231,7 +231,7 @@ export default function AreaRestrita() {
   const sendData = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const deadline = new Date(2026, 5, 5, 23, 59, 59); // 30/05/2026
+    const deadline = new Date(2026, 6, 5, 23, 59, 59); // 30/05/2026
     if (new Date() > deadline) {
       Swal.fire({
         icon: 'error',
