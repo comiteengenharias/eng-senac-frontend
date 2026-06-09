@@ -170,8 +170,6 @@ export default function AreaRestrita_Professor() {
       if (filtros.Semester) payloadFiltros.Semester = Number(filtros.Semester);
 
       const response = await getProjectsData(payloadFiltros);
-      console.log("Resposta da API:", response);
-      // A API retorna um array diretamente, não envelopado
       const projetos = Array.isArray(response) ? response : response.data || [];
       setProjetos(projetos);
       setTotalRegistros(projetos.length);
@@ -208,8 +206,6 @@ export default function AreaRestrita_Professor() {
       setLoading(true);
       try {
         const response = await getProjectsData({});
-        console.log("Resposta da API:", response);
-        // A API retorna um array diretamente, não envelopado
         const projetos = Array.isArray(response) ? response : response.data || [];
         setProjetos(projetos);
         setTotalRegistros(projetos.length);
