@@ -30,7 +30,7 @@ export default function AreaRestrita_Aluno() {
         intervals: Interval[];
         lecture: Lecture;
         lectureSpeaker: LectureSpeaker;
-        Checked: boolean;
+        checked: boolean;
     }
 
     interface Interval {
@@ -49,6 +49,7 @@ export default function AreaRestrita_Aluno() {
         speaker: number;
         title: string;
         picture: string;
+        checked: boolean;
     }
 
     interface LectureSpeaker {
@@ -165,17 +166,18 @@ export default function AreaRestrita_Aluno() {
                                         <div className="text-lg font-bold">{lecture.lecture.title}</div>
                                         <div className="border-b mb-3"><a href={lecture.lectureSpeaker.linkedin} target="_blank">{lecture.lectureSpeaker.fullname}</a></div>
                                         <div>
-                                            {lecture.Checked && (
+                                            
+                                            {lecture.lecture.checked && (
                                                 <div className="text-sm font-medium mb-1">
                                                     Presença: {lecture.attendancePercentage}%
                                                 </div>
                                             )}
-                                            {!lecture.Checked && (
+                                            {!lecture.lecture.checked && (
                                                 <p className="text-xs text-gray-400 mt-1">Aguardando divulgação da frequência</p>
                                             )}
                                             <Progress
-                                                value={lecture.Checked ? lecture.attendancePercentage : 0}
-                                                indicatorColor={lecture.Checked ? getProgressColor(lecture.attendancePercentage) : undefined}
+                                                value={lecture.lecture.checked ? lecture.attendancePercentage : 0}
+                                                indicatorColor={lecture.lecture.checked ? getProgressColor(lecture.attendancePercentage) : undefined}
                                             />
                                         </div>
                                     </div>
