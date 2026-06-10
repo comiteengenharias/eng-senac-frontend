@@ -190,9 +190,10 @@ export default function Suporte() {
                                         placeholder="Ex: Não consigo acessar a página de empresas"
                                         value={title}
                                         onChange={e => setTitle(e.target.value)}
-                                        maxLength={120}
+                                        maxLength={100}
                                         disabled={submitting}
                                     />
+                                    <p className="text-xs text-gray-400 text-right">{title.length}/100</p>
                                 </div>
 
                                 <div className="space-y-1.5">
@@ -205,10 +206,10 @@ export default function Suporte() {
                                         value={description}
                                         onChange={e => setDescription(e.target.value)}
                                         rows={5}
-                                        maxLength={1000}
+                                        maxLength={500}
                                         disabled={submitting}
                                     />
-                                    <p className="text-xs text-gray-400 text-right">{description.length}/1000</p>
+                                    <p className="text-xs text-gray-400 text-right">{description.length}/500</p>
                                 </div>
 
                                 {/* Upload de imagens */}

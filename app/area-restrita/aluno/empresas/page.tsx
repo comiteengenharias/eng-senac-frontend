@@ -72,7 +72,7 @@ export default function AreaRestrita_Aluno() {
 
   useEffect(() => {
     if (dialogOpen) {
-      startVideoFromCamera();
+      setTimeout(() => startVideoFromCamera(), 150);
     } else {
       closeVideoFromCamera();
       setNota("");
@@ -87,13 +87,20 @@ export default function AreaRestrita_Aluno() {
     }).then(stream => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        document.getElementById('picture-display')!.style.display = "block";
-        document.getElementById('picture-show')!.style.display = "none";
+        const display = document.getElementById('picture-display');
+        const show = document.getElementById('picture-show');
+        if (display) display.style.display = "block";
+        if (show) show.style.display = "none";
       }
     }).catch(error => {
+      console.error('[Empresas] getUserMedia error:', error);
+      setDialogOpen(false);
+      const isPermissionDenied = error?.name === 'NotAllowedError' || error?.name === 'PermissionDeniedError';
       Swal.fire({
-        title: 'Erro ao iniciar a câmera',
-        text: 'Se o erro persistir, entre em contato com o suporte',
+        title: isPermissionDenied ? 'Permissão de câmera negada' : 'Erro ao iniciar a câmera',
+        text: isPermissionDenied
+          ? 'Permita o acesso à câmera nas configurações do navegador e tente novamente.'
+          : 'Se o erro persistir, entre em contato com o suporte',
         icon: 'error',
         confirmButtonText: 'Ok',
         confirmButtonColor: '#003'
@@ -131,8 +138,10 @@ export default function AreaRestrita_Aluno() {
           }
         }, 'image/jpeg');
 
-        document.getElementById('picture-display')!.style.display = "none";
-        document.getElementById('picture-show')!.style.display = "block";
+        const display = document.getElementById('picture-display');
+        const show = document.getElementById('picture-show');
+        if (display) display.style.display = "none";
+        if (show) show.style.display = "block";
 
         closeVideoFromCamera();
       }
