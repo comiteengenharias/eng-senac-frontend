@@ -13,6 +13,7 @@ const s3 = new S3Client({
 export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('image') as File | null;
+    const folder = (formData.get('folder') as string | null) ?? 'evaluations';
 
     if (!file) {
         return NextResponse.json({ error: 'Nenhuma imagem enviada.' }, { status: 400 });
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     const extension = file.type.split('/')[1].replace('jpeg', 'jpg');
-    const filename = `issues/issue_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${extension}`;
+    const filename = `${folder}/eval_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${extension}`;
 
     await s3.send(new PutObjectCommand({
         Bucket: process.env.R2_BUCKET_NAME!,

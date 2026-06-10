@@ -92,18 +92,28 @@ interface BusinessAssessmentForm {
     image: File;
 }
 
-export async function postBusinessAssessment(data: BusinessAssessmentForm) {
+async function uploadEvaluationImage(file: File, folder: string): Promise<string> {
     const formData = new FormData();
+    formData.append('image', file);
+    formData.append('folder', folder);
+    const res = await fetch('/api/upload-evaluation-image', { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('Falha ao enviar imagem');
+    const data = await res.json();
+    return data.path as string;
+}
 
-    formData.append('companyId', data.companyId.toString());
-    formData.append('assessment', data.assessment.toString());
-    formData.append('comment', data.comment);
-    formData.append('file', data.image); // o backend espera como 'file'
+export async function postBusinessAssessment(data: BusinessAssessmentForm) {
+    const imageUrl = await uploadEvaluationImage(data.image, 'business-evaluations');
 
     try {
         const response: AxiosResponse = await apiClient.post(
             '/api/student/business-assessment',
-            formData,
+            {
+                companyId: data.companyId,
+                assessment: data.assessment,
+                comment: data.comment,
+                imageUrl,
+            },
             { withCredentials: true }
         );
 
@@ -139,17 +149,17 @@ interface ProjectAssessmentForm {
 }
 
 export async function postEvaluateOtherProjects(data: ProjectAssessmentForm) {
-    const formData = new FormData();
-
-    formData.append('projectId', data.projectId.toString());
-    formData.append('assessment', data.assessment.toString());
-    formData.append('comment', data.comment);
-    formData.append('file', data.image); // o backend espera como 'file'
+    const imageUrl = await uploadEvaluationImage(data.image, 'project-evaluations');
 
     try {
         const response: AxiosResponse = await apiClient.post(
             '/api/student/evaluate-other-projects',
-            formData,
+            {
+                projectId: data.projectId,
+                assessment: data.assessment,
+                comment: data.comment,
+                imageUrl,
+            },
             { withCredentials: true }
         );
         

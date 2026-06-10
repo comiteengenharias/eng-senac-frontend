@@ -11,7 +11,7 @@ interface QrCodeViewProps {
 
 export function QrCodeView({ name, value }: QrCodeViewProps) {
     return (
-        <Card className="w-full md:w-1/2">
+        <Card className="w-full">
             <CardHeader>
                 <div className="flex items-center justify-center">
                     <CardTitle className="text-lg sm:text-xl text-gray-800">

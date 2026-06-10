@@ -85,7 +85,7 @@ export default function AreaRestrita_Aluno() {
   // Limpar diálogo ao fechar
   useEffect(() => {
     if (dialogOpen) {
-      startVideoFromCamera();
+      setTimeout(() => startVideoFromCamera(), 150);
     } else {
       closeVideoFromCamera();
       setAssessment("");
@@ -101,13 +101,20 @@ export default function AreaRestrita_Aluno() {
     }).then(stream => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        document.getElementById('picture-display')!.style.display = "block";
-        document.getElementById('picture-show')!.style.display = "none";
+        const display = document.getElementById('picture-display');
+        const show = document.getElementById('picture-show');
+        if (display) display.style.display = "block";
+        if (show) show.style.display = "none";
       }
-    }).catch(() => {
+    }).catch((error) => {
+      console.error('[OutrosProjetos] getUserMedia error:', error);
+      setDialogOpen(false);
+      const isPermissionDenied = error?.name === 'NotAllowedError' || error?.name === 'PermissionDeniedError';
       Swal.fire({
-        title: 'Houve um erro',
-        text: 'Se o erro persistir, entre em contato com o suporte',
+        title: isPermissionDenied ? 'Permissão de câmera negada' : 'Erro ao iniciar a câmera',
+        text: isPermissionDenied
+          ? 'Permita o acesso à câmera nas configurações do navegador e tente novamente.'
+          : 'Se o erro persistir, entre em contato com o suporte',
         icon: 'error',
         confirmButtonText: 'Ok',
         confirmButtonColor: '#003'
