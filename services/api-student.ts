@@ -159,6 +159,28 @@ export async function postEvaluateOtherProjects(data: ProjectAssessmentForm) {
     }
 }
 
+interface PlatformIssueData {
+    studentId: number;
+    title: string;
+    description: string;
+    sentAt: string;
+    imageUrl1: string;
+    imageUrl2: string;
+}
+
+export async function postPlatformIssue(data: PlatformIssueData) {
+    try {
+        const response = await apiClient.post('/api/student/platform-issue', data, {
+            withCredentials: true,
+        });
+
+        return response.data;
+
+    } catch (error: any) {
+        throw error;
+    }
+}
+
 export async function patchPointMaterial(pointMaterial: string) {
     try {
         const response = await apiClient.patch('/api/student/point-material', { pointMaterial }, {
