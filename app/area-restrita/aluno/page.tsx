@@ -189,7 +189,6 @@ export default function AreaRestrita_Aluno() {
           </section>
           <section className="w-full flex flex-col md:flex-row gap-4">
             <QrCodeView name="QR Code de Acesso" value={String(summaryInfo?.student.idSenac)} />
-            <ChartOverview name="Presenças em Palestras" chartData={transformToChartData(lecturesInfo)} />
           </section>
         </div>
       </main >
