@@ -1,4 +1,4 @@
-import { User, Users, Home, Clapperboard, BriefcaseBusiness, FolderOpenDot, NotebookPen, Medal, Notebook, Cpu } from "lucide-react";
+import { User, Users, Home, Clapperboard, BriefcaseBusiness, FolderOpenDot, NotebookPen, Medal, Notebook, Cpu, Headset, TicketCheck } from "lucide-react";
 
 export const tooltipStudentItems = [
   {
@@ -36,6 +36,12 @@ export const tooltipStudentItems = [
     icon: FolderOpenDot,
     link: '/area-restrita/aluno/outros-projetos',
     id: 'outros-projetos'
+  },
+  {
+    label: 'Suporte',
+    icon: Headset,
+    link: '/area-restrita/aluno/suporte',
+    id: 'suporte'
   },/*
   {
     label: 'Ver avaliações',

@@ -44,3 +44,6 @@ public-backup/*
 
 .vscode/*
 .vs/*
+
+# imagens anexadas em produção
+public/issues/*
