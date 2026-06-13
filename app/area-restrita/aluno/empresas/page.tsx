@@ -54,6 +54,7 @@ export default function AreaRestrita_Aluno() {
   const [imagemCapturada, setImagemCapturada] = useState<Blob | null>(null);
   const [nota, setNota] = useState("");
   const [comentario, setComentario] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const [businessInfo, setbusinessInfo] = useState<CompanyEvaluation[] | []>([]);
 
@@ -205,6 +206,7 @@ export default function AreaRestrita_Aluno() {
       return;
     }
 
+    setSubmitting(true);
     try {
       await postBusinessAssessment({
         companyId: empresaSelecionada!.company.codCompany,
@@ -231,6 +233,8 @@ export default function AreaRestrita_Aluno() {
         confirmButtonText: 'Ok',
         confirmButtonColor: '#003'
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -362,7 +366,9 @@ export default function AreaRestrita_Aluno() {
             </div>
 
             <DialogFooter>
-              <Button onClick={sendAssessment} className="cursor-pointer transition-all duration-200 active:brightness-90">Enviar Avaliação</Button>
+              <Button onClick={sendAssessment} disabled={submitting} className="cursor-pointer transition-all duration-200 active:brightness-90">
+                {submitting ? 'Enviando...' : 'Enviar Avaliação'}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

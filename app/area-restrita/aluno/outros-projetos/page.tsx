@@ -65,6 +65,7 @@ export default function AreaRestrita_Aluno() {
   const [capturedImage, setCapturedImage] = useState<Blob | null>(null);
   const [assessment, setAssessment] = useState("");
   const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   // Filtros
   const [filtros, setFiltros] = useState({
@@ -177,6 +178,7 @@ export default function AreaRestrita_Aluno() {
       return;
     }
 
+    setSubmitting(true);
     setLoading(true);
 
     const ratingId = parseInt(assessment);
@@ -252,6 +254,7 @@ export default function AreaRestrita_Aluno() {
         confirmButtonColor: '#003'
       });
     } finally {
+      setSubmitting(false);
       setLoading(false);
     }
   };
@@ -548,7 +551,9 @@ export default function AreaRestrita_Aluno() {
             </div>
 
             <DialogFooter>
-              <Button onClick={sendAssessment} className="bg-[var(--blue)] hover:bg-[#0052a3] text-white cursor-pointer transition-all duration-200 active:brightness-90">Enviar avaliação</Button>
+              <Button onClick={sendAssessment} disabled={submitting} className="bg-[var(--blue)] hover:bg-[#0052a3] text-white cursor-pointer transition-all duration-200 active:brightness-90">
+                {submitting ? 'Enviando...' : 'Enviar avaliação'}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
